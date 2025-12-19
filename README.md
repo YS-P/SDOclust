@@ -54,6 +54,16 @@ Clustering quality and performance are evaluated using:
 
 Results are reported for each execution backend to assess the trade-offs between speed and clustering accuracy.
 
+## How to Run
+To run full pipeline: 
+```
+python3 run_parallel_sdoclust.py
+```
+
+To run benchmark the label extension methods only:
+```
+python3 dbscan_extension.py
+```
 
 ## Results
 ```
