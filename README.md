@@ -4,7 +4,7 @@
 This project aims to explore strategies for parallelizing SDOclust.  
 The main focus is on parallelizing the label extension phase, which is often the main computational bottleneck when clustering large datasets.  
 
-The implemented approach follows a split-based strategy:  
+The implemented approach follows a split based strategy:  
 1. Run SDOclust on a subset of the data (split-A) to obtain observers and their cluster labels.  
 2. Compress the observer set to reduce computational cost.  
 3. Extend cluster labels from observers to the full dataset.  
