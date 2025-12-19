@@ -10,17 +10,16 @@ The implemented approach follows a split based strategy:
 3. Extend cluster labels from observers to the full dataset.  
 4. Execute the label extension step using different execution models:
     - Sequential  
-    - Joblib (multi-threaded)  
-    - Dask (distributed / multi-process)  
+    - joblib (multi thread)  
+    - dask
 
 ## Methology
 1. Observer Extraction  
   After fitting an SDOclust model on split-A, the observers and their corresponding labels are extracted from the fitted model object.
-  This step is implemented in a utility function that inspects the internal attributes of the model.
 
 2. Label Extension Methods  
   Two label extension strategies are implemented:   
-    (a) Radius Voting (DBSCAN-like): Each data point is assigned a label based on majority voting among observers within a fixed radius.  
+    (a) Radius Voting (DBSCAN based): Each data point is assigned a label based on majority voting among observers within a fixed radius.  
     (b) 1-NN + Radius Cutoff: Each data point is assigned the label of its nearest observer if the distance is below a threshold.
     
     The method (b) is faster but less likely to DBSCAN behavior.
@@ -28,8 +27,8 @@ The implemented approach follows a split based strategy:
 3. Parallel Execution Backends  
   Each label extension strategy is executed using three different backends:  
     - Sequential: baseline implementation  
-    - Joblib (threads backend): multi thread execution on a single machine
-    - Dask (distributed): parallel execution using a Dask distributed client
+    - joblib: multi thread execution on a single machine
+    - dask: parallel execution using a Dask distributed client
 
 This allows direct comparison of performance and scalability across execution models.
 
@@ -41,7 +40,7 @@ Main script that runs SDOclust on split-A and benchmarks parallel label extensio
 ```
 dbscan_extension.py
 ```
-Contains label extension logic, observer compression functions, and parallel implementations.
+Contains label extension, observer compression, and parallel implementations.
 
 ## Evaluation
 
@@ -50,9 +49,9 @@ Clustering quality and performance are evaluated using:
 - Adjusted Rand Index (ARI)  
 - Adjusted Mutual Information (AMI)  
 - Runtime  
-- Fraction of points labeled as noise
+- Fraction of points (noise)
 
-Results are reported for each execution backend to assess the trade-offs between speed and clustering accuracy.
+Results are reported for each execution to assess the trade offs between runtime and clustering accuracy.
 
 ## How to Run
 To run full pipeline: 
