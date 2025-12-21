@@ -5,7 +5,7 @@ This project aims to implement parallelizable architectures for SDOclust.
 The main computational bottleneck of SDOclust is the label extension phase, which assigns cluster labels to all data points based on the observer model.
 This project focuses on parallelizing this phase using different execution backends.
 
-## Methology
+## Methodology
 1. Data Splitting  
 The dataset is divided into multiple splits of similar size.
 
