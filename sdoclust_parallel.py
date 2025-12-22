@@ -11,7 +11,6 @@ try:
     HAS_DASK_DISTRIBUTED = True
 except Exception:
     HAS_DASK_DISTRIBUTED = False
-dask.config.set({"distributed.worker.daemon": False})
 
 
 from sklearn.datasets import make_blobs
