@@ -120,12 +120,14 @@ def run_extend_backend(
         return list(results)
 
     if backend == "dask-dist":
-        if client is None:
-            raise ValueError("backend='dask-dist' requires a dask.distributed Client.")
-        futs = [client.submit(extend_on_split, X, sp, O, l, knn, chunksize)
+        # Scatter big shared arrays once
+        X_f = client.scatter(X, broadcast=True)
+        O_f = client.scatter(O, broadcast=True)
+        l_f = client.scatter(l, broadcast=True)
+
+        futs = [client.submit(extend_on_split, X_f, sp, O_f, l_f, knn, chunksize)
                 for sp in splits]
         return client.gather(futs)
-
 
 
 def merge_results(y_pred, results):
