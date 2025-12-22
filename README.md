@@ -22,7 +22,9 @@ These observers are then shared with all other splits.
 The label extension phase is executed using different execution models:   
     - per-batch processing: baseline implementation  
     - joblib: multi-thread execution on a single machine  
-    - dask: task-based parallel execution  
+    - dask: task-based parallel execution
+          - dask-local: local based (single machine)  
+          - dask-dist: distributed based (cluster ready)
 
     Each backend executes label extension independently on each split, and results are merged back into the original data order.
 
