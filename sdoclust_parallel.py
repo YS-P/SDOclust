@@ -6,6 +6,14 @@ from joblib import Parallel, delayed
 import dask
 from dask import delayed as ddelayed, compute as dcompute
 
+try:
+    from dask.distributed import Client, LocalCluster
+    HAS_DASK_DISTRIBUTED = True
+except Exception:
+    HAS_DASK_DISTRIBUTED = False
+dask.config.set({"distributed.worker.daemon": False})
+
+
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score
@@ -91,21 +99,34 @@ def extend_on_split(X, split_idx, O, l, knn=10, chunksize=2000):
     return split_idx, out
 
 
-def run_extend_backend(X, splits, O, l, backend="seq", knn=10, chunksize=2000, n_jobs=-1):
+def run_extend_backend(
+    X, splits, O, l,
+    backend="seq",
+    knn=10, chunksize=2000,
+    n_jobs=-1,
+    client=None,
+):
     if backend == "seq":
-        results = [extend_on_split(X, sp, O, l, knn=knn, chunksize=chunksize) for sp in splits]
-        return results
+        return [extend_on_split(X, sp, O, l, knn=knn, chunksize=chunksize) for sp in splits]
 
     if backend == "joblib":
-        results = Parallel(n_jobs=n_jobs, prefer="threads")(
+        return Parallel(n_jobs=n_jobs, prefer="threads")(
             delayed(extend_on_split)(X, sp, O, l, knn=knn, chunksize=chunksize) for sp in splits
         )
-        return results
 
-    if backend == "dask":
-        tasks = [ddelayed(extend_on_split)(X, sp, O, l, knn=knn, chunksize=chunksize) for sp in splits]
+    if backend == "dask-local":
+        tasks = [ddelayed(extend_on_split)(X, sp, O, l, knn=knn, chunksize=chunksize)
+                 for sp in splits]
         results = dcompute(*tasks)
         return list(results)
+
+    if backend == "dask-dist":
+        if client is None:
+            raise ValueError("backend='dask-dist' requires a dask.distributed Client.")
+        futs = [client.submit(extend_on_split, X, sp, O, l, knn, chunksize)
+                for sp in splits]
+        return client.gather(futs)
+
 
 
 def merge_results(y_pred, results):
@@ -115,7 +136,7 @@ def merge_results(y_pred, results):
 
 
 # Experiment with fixed n_splits
-def experiment_fixed_nsplits(X, y_true, n_splits_list=(2, 4, 8, 16),  splitA_pos=0, knn=10, chunksize=2000, seed=0, backends=("seq", "joblib", "dask"), n_jobs=-1):
+def experiment_fixed_nsplits(X, y_true, n_splits_list=(2, 4, 8, 16),  splitA_pos=0, knn=10, chunksize=2000, seed=0, backends=("seq","joblib","dask-local","dask-dist"), n_jobs=-1, client=None,):
     N, d = X.shape
 
     for backend in backends:
@@ -154,8 +175,10 @@ def experiment_fixed_nsplits(X, y_true, n_splits_list=(2, 4, 8, 16),  splitA_pos
             if len(rest_splits) > 0:
                 results = run_extend_backend(
                     X, rest_splits, O, l,
-                    backend=backend, knn=knn, chunksize=chunksize, n_jobs=n_jobs
+                    backend=backend, knn=knn, chunksize=chunksize,
+                    n_jobs=n_jobs, client=client
                 )
+
                 y_pred = merge_results(y_pred, results)
 
             ext_time = time.time() - t1
@@ -176,8 +199,9 @@ def experiment_splitA_rest(
     knn=10,
     chunksize=2000,
     seed=0,
-    backends=("seq", "joblib", "dask"),
+    backends=("seq","joblib","dask-local","dask-dist"), 
     n_jobs=-1,
+    client=None,
 ):
     rng = np.random.default_rng(seed)
     N, d = X.shape
@@ -218,7 +242,11 @@ def experiment_splitA_rest(
 
             # rest extend
             if len(rest_splits) > 0:
-                results = run_extend_backend(X, rest_splits, O, l, backend=backend, knn=knn, chunksize=chunksize, n_jobs=n_jobs)
+                results = run_extend_backend(
+                    X, rest_splits, O, l,
+                    backend=backend, knn=knn, chunksize=chunksize,
+                    n_jobs=n_jobs, client=client
+                )
                 y_pred = merge_results(y_pred, results)
 
             ext_time = time.time() - t1
@@ -247,6 +275,18 @@ if __name__ == "__main__":
     # Show baseline
     baseline_sdoclust(X, y_true)
     
+    # Set Client
+    client = None
+    if HAS_DASK_DISTRIBUTED:
+        cluster = LocalCluster(
+            n_workers=4,
+            threads_per_worker=1,
+            processes=True,
+            dashboard_address=None,
+        )
+        client = Client(cluster)
+
+
     # Fixed n_splits
     experiment_fixed_nsplits(
         X, y_true,
@@ -255,8 +295,9 @@ if __name__ == "__main__":
         knn=10,
         chunksize=2000,
         seed=0,
-        backends=("seq", "joblib", "dask"),
+        backends=("seq", "joblib", "dask-local", "dask-dist"),
         n_jobs=-1,
+        client=client,
     )
 
     # split-A fraction sweep + parallel rest_splits
@@ -267,6 +308,11 @@ if __name__ == "__main__":
         knn=10,
         chunksize=2000,
         seed=0,
-        backends=("seq", "joblib", "dask"),
+        backends=("seq", "joblib", "dask-local", "dask-dist"),
         n_jobs=-1,
+        client=client,
     )
+
+    if client is not None:
+        client.close()
+        cluster.close()
