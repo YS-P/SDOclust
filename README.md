@@ -48,7 +48,7 @@ Unless otherwise stated, the following default parameters are used:
 - Number of clusters: 5  
 - Feature dimensions: 10 and 50  
 - Dataset sizes: up to 200,000 samples  
-- kNN neighbors for label extension: k = 10  
+- KNN neighbors for label extension: Determined internally by SDOclust on splitA  
 - Standard deviation of clusters: 1.0 and 2.0  
 
 Each experiment is repeated using fixed random seeds to ensure reproducibility.
