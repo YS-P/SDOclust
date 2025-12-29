@@ -44,7 +44,7 @@ Results are reported in table:
 
 
 ## Experimental Setup  
-All experiments are conducted on synthetic Gaussian blob datasets generated using sklearn.datasets.make_blobs.
+All experiments are conducted on synthetic Gaussian blob datasets generated using `sklearn.datasets.make_blobs`.
 
 Unless otherwise stated, the following default parameters are used:  
 - Number of clusters: 5  
