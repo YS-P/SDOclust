@@ -58,14 +58,15 @@ def extract_observers_and_labels(model, d):
 
 
  # Build and fit a kNN search index on valid observers
-def build_knn_index(O2, algorithm="auto", leaf_size=40, metric="euclidean", n_jobs=1):
+def build_knn_index(O2, knn, algorithm="auto", leaf_size=40, metric="euclidean", n_jobs=1):
     return NearestNeighbors(
-        n_neighbors=1,
+        n_neighbors=knn,
         algorithm=algorithm,
         leaf_size=leaf_size,
         metric=metric,
         n_jobs=n_jobs,
     ).fit(O2)
+
 
 # Predict labels by querying k nearest observers and doing majority vote over their labels
 def extend_labels_chunk(X_chunk, nn_index, labs, l_idx, knn):
@@ -107,7 +108,7 @@ def extend_on_split(X, split_idx, O, l, knn, chunksize=2000,
         nn_algorithm_eff = nn_algorithm
 
     nn_index = build_knn_index(
-        O2, algorithm=nn_algorithm_eff, leaf_size=leaf_size, n_jobs=nn_jobs
+        O2, knn, algorithm=nn_algorithm_eff, leaf_size=leaf_size, n_jobs=nn_jobs
     )
 
     for start in range(0, len(Xi), chunksize):
