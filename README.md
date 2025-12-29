@@ -407,6 +407,7 @@ backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
 -	Joblib and Dask reduce label extension time compared to sequential execution.  
 -	Joblib and Dask show similar runtime and identical clustering quality.  
 -	Compared to baseline SDOclust, the proposed approach achieves similar clustering quality with significantly reduced total runtime.  
+-	Proposed approach outperforms MiniBatchKMeans in ARI/AMI across noisy settings.  
 -	Overall runtime decreases as the number of splits increases.  
 -	Performance is stable across different cluster standard deviations, degrades slightly with noise, and is more efficient in lower dimensions.  
 
