@@ -68,7 +68,7 @@ def build_knn_index(O2, algorithm="auto", leaf_size=40, metric="euclidean", n_jo
     ).fit(O2)
 
 # Predict labels by querying k nearest observers and doing majority vote over their labels
-def extend_labels_chunk(X_chunk, nn_index, labs, l_idx, knn=10):
+def extend_labels_chunk(X_chunk, nn_index, labs, l_idx, knn):
     k = min(knn, len(l_idx))
     if k == 0:
         return -np.ones(X_chunk.shape[0], dtype=int)
@@ -85,7 +85,7 @@ def extend_labels_chunk(X_chunk, nn_index, labs, l_idx, knn=10):
     return labs[y_idx]
 
 # Extend cluster labels against the learned observers
-def extend_on_split(X, split_idx, O, l, knn=10, chunksize=2000,
+def extend_on_split(X, split_idx, O, l, knn, chunksize=2000,
                     nn_algorithm="auto", leaf_size=40, nn_jobs=1):
     Xi = X[split_idx]
     out = np.empty(len(Xi), dtype=int)
@@ -125,10 +125,14 @@ def extend_on_split(X, split_idx, O, l, knn=10, chunksize=2000,
 def run_extend_backend(
     X, splits, O, l,
     backend="seq",
-    knn=10, chunksize=2000,
+    knn=None, chunksize=2000,
     n_jobs=-1,
     nn_jobs=1,
 ):
+    
+    if knn is None:
+        raise ValueError("knn must be provided (use model.xc or model.x)")
+    
     if backend == "seq":
         return [extend_on_split(X, sp, O, l, knn=knn, chunksize=chunksize, nn_jobs=nn_jobs) for sp in splits]
 
@@ -160,11 +164,10 @@ def experiment_fixed_nsplits(X, y_true, n_splits_list=(2, 4, 8, 16),  splitA_pos
 
     for backend in backends:
         print("\n" + "=" * 70)
-        print(f"[backend={backend}] knn={knn} chunksize={chunksize}")
+        print(f"[backend={backend}] chunksize={chunksize}")
         print(f"{'backend':>7s} {'splitA':>6s} {'|A|':>6s} {'fit':>7s} {'ext':>7s} "
               f"{'total':>7s} {'n_obs':>6s} {'ARI':>6s} {'AMI':>6s}")
 
-        # printed_attr = False
         for n_splits in n_splits_list:
             # Simlar size splits
             all_idx = np.arange(N)
@@ -183,24 +186,27 @@ def experiment_fixed_nsplits(X, y_true, n_splits_list=(2, 4, 8, 16),  splitA_pos
             (O_name, O), (l_name, l) = extract_observers_and_labels(model, d=d)
             n_obs = len(O)
             
-            # DEBUG
-            # if not printed_attr:
-            #     print(f"Using observers attr='{O_name}', labels attr='{l_name}'")
-            #     printed_attr = True
+            # use SDOclust's own x/xc for label extension
+            if hasattr(model, "xc") and model.xc is not None:
+                knn_eff = int(model.xc)
+            elif hasattr(model, "x") and model.x is not None:
+                knn_eff = int(model.x)
+            else:
+                knn_eff = int(knn)
 
             # Extend rest splits (parallel)
             t1 = time.time()
             y_pred = -np.ones(N, dtype=int)
 
             # Extend split-A (for evaluation)
-            idxA, yA = extend_on_split(X, splitA_idx, O, l, knn=knn, chunksize=chunksize, nn_jobs=1)
+            idxA, yA = extend_on_split(X, splitA_idx, O, l, knn=knn_eff, chunksize=chunksize, nn_jobs=1)
             y_pred[idxA] = yA
 
             # rest splits extend (backend)
             if len(rest_splits) > 0:
                 results = run_extend_backend(
                     X, rest_splits, O, l,
-                    backend=backend, knn=knn, chunksize=chunksize,
+                    backend=backend, knn=knn_eff, chunksize=chunksize,
                     n_jobs=n_jobs,
                     nn_jobs=1,
                 )
