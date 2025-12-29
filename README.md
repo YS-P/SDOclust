@@ -8,7 +8,6 @@ This project focuses on parallelizing this phase using different execution backe
 ## Methodology
 1. Data Splitting  
 The dataset is divided into multiple splits of similar size.
-    - Dataset is divided into n equal splits, one used as split-A.
   
 2. Observer Model (Split-A)   
 - SDOclust is run only on one split (split-A).  
@@ -37,14 +36,13 @@ Clustering quality and performance are evaluated using:
 
 For noisy_blobs, noise points are labeled -1 and excluded from ARI/AMI computation (metrics are computed on y_true != -1).
 
-Results are reported in table:
+Results are reported in tables:  
 - Scalability with respect split size  
 - Performance differences between execution backends  
 - Trade offs between computation time and clustering quality
 
 Baselines:  
-- Full SDOclust executed on the entire dataset (no splitting), serving as an algorithmic baseline.  
-- Established clustering baselines including scikit-learn KMeans and MiniBatchKMeans, as well as a parallel MiniBatchKMeans implementation using joblib and dask.  
+- Baselines include full SDOclust executed on the entire dataset, and scikit-learn KMeans and MiniBatchKMeans with sequential, joblib, and dask backends.
 
 
 ## Experimental Setup  
