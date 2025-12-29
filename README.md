@@ -1,9 +1,7 @@
 # SDOclust
 
 ## Overview
-This project aims to implement parallelizable architectures for SDOclust.
-One of the main bottlenecks of SDOclust is the label extension phase, which assigns cluster labels to all data points based on the observer model.
-This project focuses on parallelizing this phase using different execution backends.
+This project aims to develop a parallelized version of SDOclust and evaluate its performance against baseline SDOclust and established clustering methods.
 
 ## Methodology
 1. Data Splitting  
@@ -33,8 +31,6 @@ Clustering quality and performance are evaluated using:
     - Label extension time (ext)  
     - Total runtime (total)    
 - Number of observers (n_obs)
-
-For noisy_blobs, noise points are labeled -1 and excluded from ARI/AMI computation (metrics are computed on y_true != -1).
 
 Results are reported in tables:  
 - Scalability with respect split size  
