@@ -408,6 +408,13 @@ backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
    dask      4  52500   1.199   0.266   1.465    265  0.936  0.920
    dask      8  26250   0.566   0.225   0.791    263  0.936  0.920
 ```
+-	Reducing the size of split A significantly decreases SDOclust fitting time while maintaining comparable clustering results.  
+-	Joblib and Dask reduce label extension time compared to sequential execution.  
+-	Joblib and Dask show similar runtime and identical clustering quality.  
+-	Compared to baseline SDOclust, the proposed approach achieves similar clustering quality with significantly reduced total runtime.  
+-	Overall runtime decreases as the number of splits increases.  
+-	Performance is stable across different cluster standard deviations, degrades slightly with noise, and is more efficient in lower dimensions.  
+
 ### Table Notation
 - **splitA**: how split-A is defined   
     - number of splits (n) in the fixed n-splits setting  
