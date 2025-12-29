@@ -42,6 +42,10 @@ Results are reported in table:
 - Performance differences between execution backends  
 - Trade offs between computation time and clustering quality
 
+Baselines:  
+- Full SDOclust executed on the entire dataset (no splitting), serving as an algorithmic baseline.  
+- Established clustering baselines including scikit-learn KMeans and MiniBatchKMeans, as well as a parallel MiniBatchKMeans implementation using joblib and dask.  
+
 
 ## Experimental Setup  
 All experiments are conducted on synthetic Gaussian blob datasets generated using `sklearn.datasets.make_blobs`.
@@ -49,7 +53,7 @@ All experiments are conducted on synthetic Gaussian blob datasets generated usin
 Unless otherwise stated, the following default parameters are used:  
 - Number of clusters: 5  
 - Feature dimensions: 10 and 50  
-- Dataset sizes: up to 50,000 samples  
+- Dataset sizes: up to 200,000 samples  
 - kNN neighbors for label extension: k = 10  
 - Standard deviation of clusters: 1.0 and 2.0  
 
