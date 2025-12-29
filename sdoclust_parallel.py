@@ -1,17 +1,17 @@
 import time
 import numpy as np
-import scipy.spatial.distance as distance
 
 from joblib import Parallel, delayed
-import dask
 from dask import delayed as ddelayed, compute as dcompute
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score
+from sklearn.neighbors import NearestNeighbors
 
 import sdoclust as sdo
 import argparse
 
+from parallel_kmeans import kmeans_seq, minibatch_kmeans_seq, minibatch_kmeans_joblib, minibatch_kmeans_dask, evaluate_model
 
 # Split into roughly equal parts
 def make_splits(indices, n_splits, seed=0, shuffle=True):
@@ -57,40 +57,68 @@ def extract_observers_and_labels(model, d):
     return (O_name, O), (l_name, l)
 
 
-# Predict labels for one chunk via kNN voting against observers
-def extend_labels_chunk(X_chunk, O, l, knn=10):
-    valid = (l >= 0)
-    O2 = O[valid]
-    l2 = l[valid]
-    if O2.shape[0] == 0:
+ # Build and fit a kNN search index on valid observers
+def build_knn_index(O2, algorithm="auto", leaf_size=40, metric="euclidean", n_jobs=1):
+    return NearestNeighbors(
+        n_neighbors=1,
+        algorithm=algorithm,
+        leaf_size=leaf_size,
+        metric=metric,
+        n_jobs=n_jobs,
+    ).fit(O2)
+
+# Predict labels by querying k nearest observers and doing majority vote over their labels
+def extend_labels_chunk(X_chunk, nn_index, labs, l_idx, knn=10):
+    k = min(knn, len(l_idx))
+    if k == 0:
         return -np.ones(X_chunk.shape[0], dtype=int)
 
-    labs = np.unique(l2)
-    lab_to_idx = {lab: i for i, lab in enumerate(labs)}
-    l_idx = np.fromiter((lab_to_idx[v] for v in l2), dtype=int, count=len(l2))
-
-    dist = distance.cdist(X_chunk, O2, metric="euclidean")
-    k = min(knn, O2.shape[0])
-    closest = np.argpartition(dist, k - 1, axis=1)[:, :k]
+    closest = nn_index.kneighbors(X_chunk, n_neighbors=k, return_distance=False)
     lknn = l_idx[closest]
 
     cl = len(labs)
-    C = np.zeros((X_chunk.shape[0], cl), dtype=int)
-    for j in range(cl):
-        C[:, j] = np.sum(lknn == j, axis=1)
+    C = np.zeros((lknn.shape[0], cl), dtype=np.int32)
+    rows = np.arange(lknn.shape[0])[:, None]
+    np.add.at(C, (rows, lknn), 1)
 
     y_idx = np.argmax(C, axis=1)
     return labs[y_idx]
 
 # Extend cluster labels against the learned observers
-def extend_on_split(X, split_idx, O, l, knn=10, chunksize=2000):
+def extend_on_split(X, split_idx, O, l, knn=10, chunksize=2000,
+                    nn_algorithm="auto", leaf_size=40, nn_jobs=1):
     Xi = X[split_idx]
     out = np.empty(len(Xi), dtype=int)
 
+    valid = (l >= 0)
+    O2 = O[valid]
+    l2 = l[valid]
+    if O2.shape[0] == 0:
+        return split_idx, -np.ones(len(Xi), dtype=int)
+
+    labs = np.unique(l2)
+    lab_to_idx = {lab: i for i, lab in enumerate(labs)}
+    l_idx = np.fromiter((lab_to_idx[v] for v in l2), dtype=int, count=len(l2))
+
+    # optional heuristic: high dimension => brute
+    if nn_algorithm == "auto":
+        nn_algorithm_eff = "kd_tree" if O2.shape[1] <= 20 else "brute"
+    else:
+        nn_algorithm_eff = nn_algorithm
+
+    nn_index = build_knn_index(
+        O2, algorithm=nn_algorithm_eff, leaf_size=leaf_size, n_jobs=nn_jobs
+    )
+
     for start in range(0, len(Xi), chunksize):
         out[start:start + chunksize] = extend_labels_chunk(
-            Xi[start:start + chunksize], O, l, knn=knn
+            Xi[start:start + chunksize],
+            nn_index,
+            labs,
+            l_idx,
+            knn=knn,
         )
+
     return split_idx, out
 
 # Run label extension across splits
@@ -99,19 +127,25 @@ def run_extend_backend(
     backend="seq",
     knn=10, chunksize=2000,
     n_jobs=-1,
+    nn_jobs=1,
 ):
     if backend == "seq":
-        return [extend_on_split(X, sp, O, l, knn=knn, chunksize=chunksize) for sp in splits]
+        return [extend_on_split(X, sp, O, l, knn=knn, chunksize=chunksize, nn_jobs=nn_jobs) for sp in splits]
 
     if backend == "joblib":
         return Parallel(n_jobs=n_jobs, prefer="threads")(
-            delayed(extend_on_split)(X, sp, O, l, knn=knn, chunksize=chunksize) for sp in splits
+            delayed(extend_on_split)(X, sp, O, l, knn=knn, chunksize=chunksize, nn_jobs=nn_jobs)
+            for sp in splits
         )
 
     if backend == "dask":
-        tasks = [ddelayed(extend_on_split)(X, sp, O, l, knn=knn, chunksize=chunksize) for sp in splits]
+        tasks = [
+            ddelayed(extend_on_split)(X, sp, O, l, knn=knn, chunksize=chunksize, nn_jobs=nn_jobs)
+            for sp in splits
+        ]
         results = dcompute(*tasks)
         return list(results)
+
 
 # Merge results
 def merge_results(y_pred, results):
@@ -159,7 +193,7 @@ def experiment_fixed_nsplits(X, y_true, n_splits_list=(2, 4, 8, 16),  splitA_pos
             y_pred = -np.ones(N, dtype=int)
 
             # Extend split-A (for evaluation)
-            idxA, yA = extend_on_split(X, splitA_idx, O, l, knn=knn, chunksize=chunksize)
+            idxA, yA = extend_on_split(X, splitA_idx, O, l, knn=knn, chunksize=chunksize, nn_jobs=1)
             y_pred[idxA] = yA
 
             # rest splits extend (backend)
@@ -168,6 +202,7 @@ def experiment_fixed_nsplits(X, y_true, n_splits_list=(2, 4, 8, 16),  splitA_pos
                     X, rest_splits, O, l,
                     backend=backend, knn=knn, chunksize=chunksize,
                     n_jobs=n_jobs,
+                    nn_jobs=1,
                 )
 
                 y_pred = merge_results(y_pred, results)
@@ -175,9 +210,8 @@ def experiment_fixed_nsplits(X, y_true, n_splits_list=(2, 4, 8, 16),  splitA_pos
             ext_time = time.time() - t1
             total_time = fit_time + ext_time
 
-            mask = (y_true != -1)
-            ari = adjusted_rand_score(y_true[mask], y_pred[mask])
-            ami = adjusted_mutual_info_score(y_true[mask], y_pred[mask])
+            ari = adjusted_rand_score(y_true, y_pred)
+            ami = adjusted_mutual_info_score(y_true, y_pred)
 
             print(f"{backend:>7s} {n_splits:6d} {len(splitA_idx):6d} {fit_time:7.3f} {ext_time:7.3f} {total_time:7.3f} {n_obs:6d} {ari:6.3f} {ami:6.3f}")
 
@@ -187,12 +221,29 @@ def baseline_sdoclust(X, y_true):
     t0 = time.time()
     y_pred = sdo.SDOclust().fit_predict(X)
     te = time.time() - t0
-    mask = (y_true != -1)
-    ari = adjusted_rand_score(y_true[mask], y_pred[mask])
-    ami = adjusted_mutual_info_score(y_true[mask], y_pred[mask])
+    ari = adjusted_rand_score(y_true, y_pred)
+    ami = adjusted_mutual_info_score(y_true, y_pred)
     print("\n" + "-" * 70)
     print(f"Baseline SDOclust Time={te:.3f}s  ARI={ari:.3f}  AMI={ami:.3f}")
 
+# Run baseline kmean parallel 
+def baseline_kmean_parallel(X, y):
+    print("Baseline parallel kmeans")
+    t = time.time()
+    model_seq = kmeans_seq(X, n_clusters=5)
+    evaluate_model(model_seq, X, y, "KMeans Sequential", t)
+    
+    t = time.time()
+    model_mb_seq = minibatch_kmeans_seq(X, n_clusters=5, batch_size=2000)
+    evaluate_model(model_mb_seq, X, y, "MiniBatchKMeans Seq", t)
+
+    t = time.time()
+    model_joblib = minibatch_kmeans_joblib(X, n_clusters=5, batch_size=2000, n_jobs=-1)
+    evaluate_model(model_joblib, X, y, "MiniBatchKMeans Joblib", t)
+
+    t = time.time()
+    model_dask = minibatch_kmeans_dask(X, n_clusters=5, batch_size=2000)
+    evaluate_model(model_dask, X, y, "MiniBatchKMeans Dask", t)
 
 # Build Dataset
 def build_dataset(name, N, d, centers, std, seed, noise_frac=0.0):
@@ -259,6 +310,9 @@ def run_suite(
 
                         # baseline: full SDOclust on whole X
                         baseline_sdoclust(X, y_true)
+                        
+                        # baseline: kmean parallel
+                        baseline_kmean_parallel(X, y_true)
 
                         # fixed n_splits experiment
                         experiment_fixed_nsplits(
