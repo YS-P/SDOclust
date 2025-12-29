@@ -130,7 +130,7 @@ def experiment_fixed_nsplits(X, y_true, n_splits_list=(2, 4, 8, 16),  splitA_pos
         print(f"{'backend':>7s} {'splitA':>6s} {'|A|':>6s} {'fit':>7s} {'ext':>7s} "
               f"{'total':>7s} {'n_obs':>6s} {'ARI':>6s} {'AMI':>6s}")
 
-        printed_attr = False
+        # printed_attr = False
         for n_splits in n_splits_list:
             # Simlar size splits
             all_idx = np.arange(N)
@@ -148,9 +148,11 @@ def experiment_fixed_nsplits(X, y_true, n_splits_list=(2, 4, 8, 16),  splitA_pos
 
             (O_name, O), (l_name, l) = extract_observers_and_labels(model, d=d)
             n_obs = len(O)
-            if not printed_attr:
-                print(f"Using observers attr='{O_name}', labels attr='{l_name}'")
-                printed_attr = True
+            
+            # DEBUG
+            # if not printed_attr:
+            #     print(f"Using observers attr='{O_name}', labels attr='{l_name}'")
+            #     printed_attr = True
 
             # Extend rest splits (parallel)
             t1 = time.time()
