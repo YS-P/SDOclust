@@ -119,36 +119,36 @@ DATASET=blobs  N=200000  d=10  centers=5  std=1.0  noise_frac=0.0
 [SEED=42]
 
 ----------------------------------------------------------------------
-Baseline SDOclust Time=4.650s  ARI=1.000  AMI=1.000
+Baseline SDOclust Time=4.400s  ARI=1.000  AMI=1.000
 Baseline parallel kmeans
-KMeans Sequential         Time=0.135s  ARI=1.000  AMI=1.000
-MiniBatchKMeans Seq       Time=0.103s  ARI=1.000  AMI=1.000
-MiniBatchKMeans Joblib    Time=1.895s  ARI=1.000  AMI=1.000
-MiniBatchKMeans Dask      Time=0.666s  ARI=1.000  AMI=1.000
+KMeans Sequential         Time=0.095s  ARI=1.000  AMI=1.000
+MiniBatchKMeans Seq       Time=0.140s  ARI=1.000  AMI=1.000
+MiniBatchKMeans Joblib    Time=1.882s  ARI=1.000  AMI=1.000
+MiniBatchKMeans Dask      Time=0.631s  ARI=1.000  AMI=1.000
 
 ======================================================================
 [backend=seq] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-    seq      2 100000   1.806   0.494   2.299    267  1.000  1.000
-    seq      4  50000   0.884   0.585   1.469    267  1.000  1.000
-    seq      8  25000   0.416   0.490   0.906    264  1.000  1.000
-    seq     16  12500   0.223   0.468   0.691    261  1.000  1.000
+    seq      2 100000   1.782   0.526   2.309    267  1.000  1.000
+    seq      4  50000   0.871   0.521   1.392    267  1.000  1.000
+    seq      8  25000   0.415   0.537   0.952    264  1.000  1.000
+    seq     16  12500   0.221   0.517   0.738    261  1.000  1.000
 
 ======================================================================
 [backend=joblib] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
- joblib      2 100000   1.833   0.497   2.330    267  1.000  1.000
- joblib      4  50000   0.859   0.363   1.222    267  1.000  1.000
- joblib      8  25000   0.540   0.169   0.709    264  1.000  1.000
- joblib     16  12500   0.220   0.134   0.354    261  1.000  1.000
+ joblib      2 100000   1.756   0.524   2.279    267  1.000  1.000
+ joblib      4  50000   0.852   0.282   1.134    267  1.000  1.000
+ joblib      8  25000   0.409   0.179   0.588    264  1.000  1.000
+ joblib     16  12500   0.212   0.148   0.360    261  1.000  1.000
 
 ======================================================================
 [backend=dask] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-   dask      2 100000   1.794   0.499   2.294    267  1.000  1.000
-   dask      4  50000   0.856   0.315   1.171    267  1.000  1.000
-   dask      8  25000   0.408   0.158   0.566    264  1.000  1.000
-   dask     16  12500   0.207   0.123   0.330    261  1.000  1.000
+   dask      2 100000   1.753   0.521   2.275    267  1.000  1.000
+   dask      4  50000   0.847   0.272   1.119    267  1.000  1.000
+   dask      8  25000   0.400   0.169   0.569    264  1.000  1.000
+   dask     16  12500   0.208   0.136   0.344    261  1.000  1.000
 
 ######################################################################
 DATASET=blobs  N=200000  d=10  centers=5  std=2.0  noise_frac=0.0
@@ -156,36 +156,36 @@ DATASET=blobs  N=200000  d=10  centers=5  std=2.0  noise_frac=0.0
 [SEED=42]
 
 ----------------------------------------------------------------------
-Baseline SDOclust Time=4.704s  ARI=1.000  AMI=1.000
+Baseline SDOclust Time=4.483s  ARI=1.000  AMI=1.000
 Baseline parallel kmeans
 KMeans Sequential         Time=0.044s  ARI=1.000  AMI=0.999
-MiniBatchKMeans Seq       Time=0.080s  ARI=1.000  AMI=0.999
-MiniBatchKMeans Joblib    Time=0.182s  ARI=0.719  AMI=0.865
+MiniBatchKMeans Seq       Time=0.083s  ARI=1.000  AMI=0.999
+MiniBatchKMeans Joblib    Time=0.188s  ARI=0.719  AMI=0.865
 MiniBatchKMeans Dask      Time=0.398s  ARI=0.719  AMI=0.865
 
 ======================================================================
 [backend=seq] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-    seq      2 100000   1.757   0.578   2.336    267  1.000  1.000
-    seq      4  50000   0.859   0.560   1.419    263  1.000  1.000
-    seq      8  25000   0.406   0.557   0.963    264  1.000  1.000
-    seq     16  12500   0.210   0.596   0.806    258  1.000  0.999
+    seq      2 100000   1.751   0.633   2.385    267  1.000  1.000
+    seq      4  50000   0.863   0.628   1.491    263  1.000  1.000
+    seq      8  25000   0.424   0.623   1.048    264  1.000  1.000
+    seq     16  12500   0.211   0.624   0.835    258  1.000  0.999
 
 ======================================================================
 [backend=joblib] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
- joblib      2 100000   1.767   0.607   2.373    267  1.000  1.000
- joblib      4  50000   0.875   0.298   1.174    263  1.000  1.000
- joblib      8  25000   0.405   0.179   0.583    264  1.000  1.000
- joblib     16  12500   0.213   0.156   0.369    258  1.000  0.999
+ joblib      2 100000   1.766   0.638   2.404    267  1.000  1.000
+ joblib      4  50000   0.869   0.335   1.204    263  1.000  1.000
+ joblib      8  25000   0.405   0.199   0.604    264  1.000  1.000
+ joblib     16  12500   0.210   0.162   0.372    258  1.000  0.999
 
 ======================================================================
 [backend=dask] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-   dask      2 100000   1.751   0.579   2.330    267  1.000  1.000
-   dask      4  50000   0.862   0.287   1.149    263  1.000  1.000
-   dask      8  25000   0.405   0.167   0.571    264  1.000  1.000
-   dask     16  12500   0.210   0.152   0.362    258  1.000  0.999
+   dask      2 100000   1.756   0.630   2.385    267  1.000  1.000
+   dask      4  50000   0.863   0.328   1.191    263  1.000  1.000
+   dask      8  25000   0.405   0.192   0.597    264  1.000  1.000
+   dask     16  12500   0.210   0.162   0.372    258  1.000  0.999
 
 ######################################################################
 DATASET=blobs  N=200000  d=50  centers=5  std=1.0  noise_frac=0.0
@@ -193,36 +193,36 @@ DATASET=blobs  N=200000  d=50  centers=5  std=1.0  noise_frac=0.0
 [SEED=42]
 
 ----------------------------------------------------------------------
-Baseline SDOclust Time=6.514s  ARI=1.000  AMI=1.000
+Baseline SDOclust Time=5.915s  ARI=1.000  AMI=1.000
 Baseline parallel kmeans
-KMeans Sequential         Time=0.123s  ARI=1.000  AMI=1.000
-MiniBatchKMeans Seq       Time=0.029s  ARI=1.000  AMI=1.000
-MiniBatchKMeans Joblib    Time=0.915s  ARI=1.000  AMI=1.000
-MiniBatchKMeans Dask      Time=1.101s  ARI=1.000  AMI=1.000
+KMeans Sequential         Time=0.096s  ARI=1.000  AMI=1.000
+MiniBatchKMeans Seq       Time=0.027s  ARI=1.000  AMI=1.000
+MiniBatchKMeans Joblib    Time=0.933s  ARI=1.000  AMI=1.000
+MiniBatchKMeans Dask      Time=1.075s  ARI=1.000  AMI=1.000
 
 ======================================================================
 [backend=seq] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-    seq      2 100000   2.347   1.137   3.485    267  1.000  1.000
-    seq      4  50000   1.168   1.095   2.263    266  1.000  1.000
-    seq      8  25000   0.545   1.139   1.684    264  1.000  1.000
-    seq     16  12500   0.274   1.212   1.486    263  1.000  1.000
+    seq      2 100000   2.310   0.369   2.679    267  1.000  1.000
+    seq      4  50000   1.158   0.353   1.511    266  1.000  1.000
+    seq      8  25000   0.536   0.369   0.906    264  1.000  1.000
+    seq     16  12500   0.273   0.374   0.647    263  1.000  1.000
 
 ======================================================================
 [backend=joblib] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
- joblib      2 100000   2.449   1.157   3.606    267  1.000  1.000
- joblib      4  50000   1.169   0.591   1.760    266  1.000  1.000
- joblib      8  25000   0.554   0.362   0.916    264  1.000  1.000
- joblib     16  12500   0.269   0.291   0.560    263  1.000  1.000
+ joblib      2 100000   2.315   0.407   2.722    267  1.000  1.000
+ joblib      4  50000   1.138   0.265   1.404    266  1.000  1.000
+ joblib      8  25000   0.537   0.217   0.754    264  1.000  1.000
+ joblib     16  12500   0.281   0.206   0.487    263  1.000  1.000
 
 ======================================================================
 [backend=dask] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-   dask      2 100000   2.453   1.112   3.566    267  1.000  1.000
-   dask      4  50000   1.196   0.567   1.763    266  1.000  1.000
-   dask      8  25000   0.574   0.372   0.946    264  1.000  1.000
-   dask     16  12500   0.273   0.291   0.564    263  1.000  1.000
+   dask      2 100000   2.338   0.398   2.736    267  1.000  1.000
+   dask      4  50000   1.169   0.239   1.407    266  1.000  1.000
+   dask      8  25000   0.538   0.205   0.742    264  1.000  1.000
+   dask     16  12500   0.279   0.194   0.474    263  1.000  1.000
 
 ######################################################################
 DATASET=blobs  N=200000  d=50  centers=5  std=2.0  noise_frac=0.0
@@ -230,36 +230,36 @@ DATASET=blobs  N=200000  d=50  centers=5  std=2.0  noise_frac=0.0
 [SEED=42]
 
 ----------------------------------------------------------------------
-Baseline SDOclust Time=6.576s  ARI=1.000  AMI=1.000
+Baseline SDOclust Time=5.999s  ARI=1.000  AMI=1.000
 Baseline parallel kmeans
-KMeans Sequential         Time=0.110s  ARI=1.000  AMI=1.000
+KMeans Sequential         Time=0.085s  ARI=1.000  AMI=1.000
 MiniBatchKMeans Seq       Time=0.028s  ARI=1.000  AMI=1.000
-MiniBatchKMeans Joblib    Time=0.329s  ARI=0.781  AMI=0.904
-MiniBatchKMeans Dask      Time=0.464s  ARI=0.781  AMI=0.904
+MiniBatchKMeans Joblib    Time=0.309s  ARI=0.781  AMI=0.904
+MiniBatchKMeans Dask      Time=0.473s  ARI=0.781  AMI=0.904
 
 ======================================================================
 [backend=seq] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-    seq      2 100000   2.319   1.141   3.460    266  1.000  1.000
-    seq      4  50000   1.150   1.113   2.264    266  1.000  1.000
-    seq      8  25000   0.538   1.116   1.654    265  1.000  1.000
-    seq     16  12500   0.273   1.116   1.390    261  1.000  1.000
+    seq      2 100000   2.324   0.383   2.707    266  1.000  1.000
+    seq      4  50000   1.199   0.358   1.557    266  1.000  1.000
+    seq      8  25000   0.540   0.369   0.909    265  1.000  1.000
+    seq     16  12500   0.277   0.368   0.645    261  1.000  1.000
 
 ======================================================================
 [backend=joblib] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
- joblib      2 100000   2.314   1.154   3.468    266  1.000  1.000
- joblib      4  50000   1.146   0.580   1.725    266  1.000  1.000
- joblib      8  25000   0.533   0.355   0.889    265  1.000  1.000
- joblib     16  12500   0.271   0.286   0.557    261  1.000  1.000
+ joblib      2 100000   2.400   0.392   2.792    266  1.000  1.000
+ joblib      4  50000   1.154   0.251   1.405    266  1.000  1.000
+ joblib      8  25000   0.541   0.221   0.762    265  1.000  1.000
+ joblib     16  12500   0.275   0.215   0.490    261  1.000  1.000
 
 ======================================================================
 [backend=dask] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-   dask      2 100000   2.309   1.135   3.445    266  1.000  1.000
-   dask      4  50000   1.138   0.572   1.709    266  1.000  1.000
-   dask      8  25000   0.536   0.348   0.884    265  1.000  1.000
-   dask     16  12500   0.269   0.297   0.566    261  1.000  1.000
+   dask      2 100000   2.337   0.370   2.706    266  1.000  1.000
+   dask      4  50000   1.153   0.240   1.393    266  1.000  1.000
+   dask      8  25000   0.543   0.214   0.757    265  1.000  1.000
+   dask     16  12500   0.274   0.202   0.476    261  1.000  1.000
 
 ######################################################################
 DATASET=noisy_blobs  N=200000  d=10  centers=5  std=1.0  noise_frac=0.05
@@ -267,36 +267,36 @@ DATASET=noisy_blobs  N=200000  d=10  centers=5  std=1.0  noise_frac=0.05
 [SEED=42]
 
 ----------------------------------------------------------------------
-Baseline SDOclust Time=4.692s  ARI=0.936  AMI=0.921
+Baseline SDOclust Time=4.602s  ARI=0.936  AMI=0.921
 Baseline parallel kmeans
-KMeans Sequential         Time=0.046s  ARI=0.936  AMI=0.920
+KMeans Sequential         Time=0.048s  ARI=0.936  AMI=0.920
 MiniBatchKMeans Seq       Time=0.059s  ARI=0.936  AMI=0.920
-MiniBatchKMeans Joblib    Time=0.175s  ARI=0.748  AMI=0.854
-MiniBatchKMeans Dask      Time=0.393s  ARI=0.748  AMI=0.854
+MiniBatchKMeans Joblib    Time=0.180s  ARI=0.748  AMI=0.854
+MiniBatchKMeans Dask      Time=0.392s  ARI=0.748  AMI=0.854
 
 ======================================================================
 [backend=seq] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-    seq      2 105000   1.830   0.512   2.341    266  0.936  0.921
-    seq      4  52500   0.909   0.508   1.416    267  0.936  0.921
-    seq      8  26250   0.444   0.572   1.016    264  0.936  0.921
-    seq     16  13125   0.221   0.575   0.796    261  0.936  0.920
+    seq      2 105000   1.869   0.597   2.466    266  0.936  0.921
+    seq      4  52500   0.922   0.611   1.533    267  0.936  0.921
+    seq      8  26250   0.437   0.592   1.028    264  0.936  0.921
+    seq     16  13125   0.232   0.582   0.814    261  0.936  0.920
 
 ======================================================================
 [backend=joblib] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
- joblib      2 105000   1.821   0.517   2.338    266  0.936  0.921
- joblib      4  52500   0.952   0.266   1.218    267  0.936  0.921
- joblib      8  26250   0.417   0.193   0.610    264  0.936  0.921
- joblib     16  13125   0.220   0.150   0.369    261  0.936  0.920
+ joblib      2 105000   1.844   0.597   2.442    266  0.936  0.921
+ joblib      4  52500   0.909   0.306   1.216    267  0.936  0.921
+ joblib      8  26250   0.431   0.185   0.616    264  0.936  0.921
+ joblib     16  13125   0.215   0.157   0.371    261  0.936  0.920
 
 ======================================================================
 [backend=dask] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-   dask      2 105000   1.848   0.511   2.358    266  0.936  0.921
-   dask      4  52500   0.895   0.261   1.155    267  0.936  0.921
-   dask      8  26250   0.424   0.180   0.604    264  0.936  0.921
-   dask     16  13125   0.213   0.148   0.362    261  0.936  0.920
+   dask      2 105000   1.861   0.625   2.486    266  0.936  0.921
+   dask      4  52500   0.902   0.304   1.206    267  0.936  0.921
+   dask      8  26250   0.421   0.187   0.608    264  0.936  0.921
+   dask     16  13125   0.212   0.153   0.366    261  0.936  0.920
 
 ######################################################################
 DATASET=noisy_blobs  N=200000  d=10  centers=5  std=2.0  noise_frac=0.05
@@ -304,36 +304,36 @@ DATASET=noisy_blobs  N=200000  d=10  centers=5  std=2.0  noise_frac=0.05
 [SEED=42]
 
 ----------------------------------------------------------------------
-Baseline SDOclust Time=4.598s  ARI=0.936  AMI=0.920
+Baseline SDOclust Time=4.574s  ARI=0.936  AMI=0.920
 Baseline parallel kmeans
-KMeans Sequential         Time=0.063s  ARI=0.672  AMI=0.793
-MiniBatchKMeans Seq       Time=0.044s  ARI=0.670  AMI=0.793
-MiniBatchKMeans Joblib    Time=0.115s  ARI=0.744  AMI=0.843
+KMeans Sequential         Time=0.068s  ARI=0.672  AMI=0.793
+MiniBatchKMeans Seq       Time=0.051s  ARI=0.670  AMI=0.793
+MiniBatchKMeans Joblib    Time=0.134s  ARI=0.744  AMI=0.843
 MiniBatchKMeans Dask      Time=0.348s  ARI=0.744  AMI=0.843
 
 ======================================================================
 [backend=seq] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-    seq      2 105000   1.888   0.582   2.470    265  0.936  0.920
-    seq      4  52500   0.924   0.522   1.446    267  0.936  0.920
-    seq      8  26250   0.441   0.642   1.083    264  0.936  0.920
-    seq     16  13125   0.239   0.551   0.790    261  0.936  0.920
+    seq      2 105000   1.871   0.644   2.515    265  0.936  0.920
+    seq      4  52500   0.932   0.677   1.609    267  0.936  0.920
+    seq      8  26250   0.439   0.677   1.115    264  0.936  0.920
+    seq     16  13125   0.226   0.664   0.890    261  0.936  0.920
 
 ======================================================================
 [backend=joblib] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
- joblib      2 105000   1.864   0.566   2.430    265  0.936  0.920
- joblib      4  52500   0.903   0.282   1.185    267  0.936  0.920
- joblib      8  26250   0.433   0.196   0.629    264  0.936  0.920
- joblib     16  13125   0.217   0.146   0.363    261  0.936  0.920
+ joblib      2 105000   1.857   0.640   2.497    265  0.936  0.920
+ joblib      4  52500   0.909   0.359   1.267    267  0.936  0.920
+ joblib      8  26250   0.432   0.220   0.652    264  0.936  0.920
+ joblib     16  13125   0.216   0.175   0.391    261  0.936  0.920
 
 ======================================================================
 [backend=dask] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-   dask      2 105000   1.850   0.559   2.409    265  0.936  0.920
-   dask      4  52500   0.907   0.267   1.174    267  0.936  0.920
-   dask      8  26250   0.425   0.197   0.622    264  0.936  0.920
-   dask     16  13125   0.216   0.145   0.361    261  0.936  0.920
+   dask      2 105000   1.865   0.635   2.501    265  0.936  0.920
+   dask      4  52500   0.904   0.350   1.254    267  0.936  0.920
+   dask      8  26250   0.423   0.211   0.634    264  0.936  0.920
+   dask     16  13125   0.216   0.169   0.385    261  0.936  0.920
 
 ######################################################################
 DATASET=noisy_blobs  N=200000  d=50  centers=5  std=1.0  noise_frac=0.05
@@ -341,36 +341,36 @@ DATASET=noisy_blobs  N=200000  d=50  centers=5  std=1.0  noise_frac=0.05
 [SEED=42]
 
 ----------------------------------------------------------------------
-Baseline SDOclust Time=6.744s  ARI=0.936  AMI=0.920
+Baseline SDOclust Time=6.229s  ARI=0.936  AMI=0.920
 Baseline parallel kmeans
-KMeans Sequential         Time=0.125s  ARI=0.936  AMI=0.920
-MiniBatchKMeans Seq       Time=0.106s  ARI=0.936  AMI=0.920
-MiniBatchKMeans Joblib    Time=0.227s  ARI=0.623  AMI=0.802
-MiniBatchKMeans Dask      Time=0.367s  ARI=0.623  AMI=0.802
+KMeans Sequential         Time=0.104s  ARI=0.936  AMI=0.920
+MiniBatchKMeans Seq       Time=0.093s  ARI=0.936  AMI=0.920
+MiniBatchKMeans Joblib    Time=0.207s  ARI=0.623  AMI=0.802
+MiniBatchKMeans Dask      Time=0.361s  ARI=0.623  AMI=0.802
 
 ======================================================================
 [backend=seq] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-    seq      2 105000   2.485   1.106   3.591    267  0.936  0.920
-    seq      4  52500   1.210   1.210   2.420    266  0.936  0.920
-    seq      8  26250   0.570   1.178   1.749    262  0.936  0.920
-    seq     16  13125   0.291   1.160   1.451    261  0.936  0.920
+    seq      2 105000   2.441   0.381   2.822    267  0.936  0.920
+    seq      4  52500   1.196   0.386   1.582    266  0.936  0.920
+    seq      8  26250   0.563   0.390   0.953    262  0.936  0.920
+    seq     16  13125   0.286   0.395   0.682    261  0.936  0.920
 
 ======================================================================
 [backend=joblib] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
- joblib      2 105000   2.426   1.119   3.545    267  0.936  0.920
- joblib      4  52500   1.206   0.607   1.812    266  0.936  0.920
- joblib      8  26250   0.559   0.369   0.928    262  0.936  0.920
- joblib     16  13125   0.286   0.302   0.588    261  0.936  0.920
+ joblib      2 105000   2.410   0.417   2.827    267  0.936  0.920
+ joblib      4  52500   1.193   0.258   1.451    266  0.936  0.920
+ joblib      8  26250   0.563   0.215   0.778    262  0.936  0.920
+ joblib     16  13125   0.288   0.203   0.491    261  0.936  0.920
 
 ======================================================================
 [backend=dask] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-   dask      2 105000   2.432   1.115   3.547    267  0.936  0.920
-   dask      4  52500   1.204   0.604   1.808    266  0.936  0.920
-   dask      8  26250   0.562   0.365   0.928    262  0.936  0.920
-   dask     16  13125   0.286   0.299   0.585    261  0.936  0.920
+   dask      2 105000   2.449   0.432   2.880    267  0.936  0.920
+   dask      4  52500   1.255   0.274   1.529    266  0.936  0.920
+   dask      8  26250   0.653   0.222   0.875    262  0.936  0.920
+   dask     16  13125   0.338   0.241   0.580    261  0.936  0.920
 
 ######################################################################
 DATASET=noisy_blobs  N=200000  d=50  centers=5  std=2.0  noise_frac=0.05
@@ -378,36 +378,35 @@ DATASET=noisy_blobs  N=200000  d=50  centers=5  std=2.0  noise_frac=0.05
 [SEED=42]
 
 ----------------------------------------------------------------------
-Baseline SDOclust Time=6.600s  ARI=0.936  AMI=0.920
+Baseline SDOclust Time=6.532s  ARI=0.936  AMI=0.920
 Baseline parallel kmeans
-KMeans Sequential         Time=0.127s  ARI=0.936  AMI=0.920
-MiniBatchKMeans Seq       Time=0.110s  ARI=0.780  AMI=0.898
-MiniBatchKMeans Joblib    Time=0.209s  ARI=0.615  AMI=0.787
+KMeans Sequential         Time=0.102s  ARI=0.936  AMI=0.920
+MiniBatchKMeans Seq       Time=0.101s  ARI=0.780  AMI=0.898
+MiniBatchKMeans Joblib    Time=0.222s  ARI=0.615  AMI=0.787
 MiniBatchKMeans Dask      Time=0.375s  ARI=0.615  AMI=0.787
 
 ======================================================================
 [backend=seq] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-    seq      2 105000   2.439   1.190   3.629    263  0.936  0.920
-    seq      4  52500   1.247   1.204   2.451    265  0.936  0.920
-    seq      8  26250   0.576   1.242   1.818    263  0.936  0.920
-    seq     16  13125   0.293   1.165   1.458    260  0.936  0.920
+    seq      2 105000   2.430   0.371   2.800    263  0.936  0.920
+    seq      4  52500   1.199   0.371   1.569    265  0.936  0.920
+    seq      8  26250   0.580   0.384   0.964    263  0.936  0.920
+    seq     16  13125   0.290   0.392   0.683    260  0.936  0.920
 
 ======================================================================
 [backend=joblib] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
- joblib      2 105000   2.437   1.190   3.626    263  0.936  0.920
- joblib      4  52500   1.206   0.626   1.832    265  0.936  0.920
- joblib      8  26250   0.566   0.382   0.948    263  0.936  0.920
- joblib     16  13125   0.287   0.308   0.595    260  0.936  0.920
+ joblib      2 105000   2.416   0.409   2.825    263  0.936  0.920
+ joblib      4  52500   1.216   0.252   1.468    265  0.936  0.920
+ joblib      8  26250   0.564   0.221   0.785    263  0.936  0.920
+ joblib     16  13125   0.288   0.284   0.572    260  0.936  0.920
 
 ======================================================================
 [backend=dask] knn=10 chunksize=2000
 backend splitA    |A|     fit     ext   total  n_obs    ARI    AMI
-   dask      2 105000   2.439   1.192   3.632    263  0.936  0.920
-   dask      4  52500   1.210   0.618   1.828    265  0.936  0.920
-   dask      8  26250   0.565   0.381   0.947    263  0.936  0.920
-   dask     16  13125   0.286   0.297   0.583    260  0.936  0.920
+   dask      2 105000   2.430   0.405   2.835    263  0.936  0.920
+   dask      4  52500   1.199   0.266   1.465    265  0.936  0.920
+   dask      8  26250   0.566   0.225   0.791    263  0.936  0.920
 ```
 ### Table Notation
 - **splitA**: how split-A is defined   
