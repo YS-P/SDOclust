@@ -34,9 +34,7 @@ FIELDNAMES = [
     "backend", "n_splits", "splitA_pos", "splitA_size",
     "chunksize", "knn_eff",
     "fit_time", "ext_time", "total_time",
-    "n_obs", "ari", "ami",
-    # HPC / SLURM metadata (optional)
-    "slurm_job_id", "slurm_cpus_per_task", "slurm_node_list", "hostname",
+    "n_obs", "ari", "ami"
 ]
 
 # -----------------------------
@@ -47,14 +45,6 @@ def parse_float_list(s: str):
 
 def parse_int_list(s: str):
     return [int(x.strip()) for x in s.split(",") if x.strip() != ""]
-
-def get_hpc_meta():
-    return {
-        "slurm_job_id": os.environ.get("SLURM_JOB_ID", ""),
-        "slurm_cpus_per_task": os.environ.get("SLURM_CPUS_PER_TASK", ""),
-        "slurm_node_list": os.environ.get("SLURM_NODELIST", ""),
-        "hostname": socket.gethostname(),
-    }
 
 def append_result_csv(output_path, row_dict):
     out_dir = os.path.dirname(output_path)
@@ -297,7 +287,6 @@ def experiment_fixed_nsplits(
                     "ari": float(ari),
                     "ami": float(ami),
                 }
-                row.update(get_hpc_meta())
                 append_result_csv(output_path, row)
 
 # Baseline: full SDOclust
@@ -463,7 +452,6 @@ def run_suite(
                                         "ari": float(ari),
                                         "ami": float(ami),
                                     }
-                                    row.update(get_hpc_meta())
                                     append_result_csv(output_path, row)
 
                                 # baseline
@@ -496,7 +484,6 @@ def run_suite(
                                             "ari": float(ari),
                                             "ami": float(ami),
                                         }
-                                        row.update(get_hpc_meta())
                                         append_result_csv(output_path, row)
 
                                 # Wrapper SDOclust
