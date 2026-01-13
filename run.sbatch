@@ -4,8 +4,8 @@
 #SBATCH --error=logs/%x_%j.err
 #SBATCH --time=02:00:00
 #SBATCH --nodes=1
-#SBATCH --cpus-per-task=2
-#SBATCH --mem=800M
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=28GB
 
 set -euo pipefail
 
