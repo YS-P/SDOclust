@@ -16,8 +16,8 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 # Set Experiment
-CORES_LIST=(1 2)
-SIZE_LIST=(50000 100000)
+CORES_LIST=(1 2 4 8 16)
+SIZE_LIST=(50000 200000)
 
 # Prevent BLAS/OMP corruption
 export OMP_NUM_THREADS=1
