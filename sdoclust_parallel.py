@@ -273,7 +273,7 @@ def experiment_fixed_nsplits(
             if output_path is not None:
                 row = {
                     "phase": "experiment",
-                    "method": "wrapper_sdoclust",
+                    "method": "parallel_sdoclust",
                     "dataset": dataset_name,
                     "N": int(N if N is not None else N_X),
                     "d": int(d if d is not None else d_X),
