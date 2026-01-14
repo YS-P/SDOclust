@@ -4,7 +4,7 @@ import numpy as np
 from joblib import Parallel, delayed
 from dask import delayed as ddelayed, compute as dcompute
 
-from sklearn.datasets import make_blobs, make_moons
+from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score
 
@@ -15,7 +15,6 @@ import argparse
 
 import os
 import csv
-import socket
 
 from parallel_kmeans import (
     kmeans_seq,
@@ -25,9 +24,7 @@ from parallel_kmeans import (
     evaluate_model,
 )
 
-# -----------------------------
-# CSV schema (single source of truth)
-# -----------------------------
+# For result saving in CSV format
 FIELDNAMES = [
     "phase", "method",
     "dataset", "N", "d", "centers", "std", "noise_frac", "seed",
@@ -37,9 +34,7 @@ FIELDNAMES = [
     "n_obs", "ari", "ami"
 ]
 
-# -----------------------------
-# Utils
-# -----------------------------
+# Utilities
 def parse_float_list(s: str):
     return [float(x.strip()) for x in s.split(",") if x.strip() != ""]
 
@@ -363,13 +358,6 @@ def build_dataset(name, N, d, centers, std, seed, noise_frac=0.0):
             cluster_std=std,
             random_state=seed,
         )
-    
-    # Moons dataset
-    elif name == "moons":
-        X, y = make_moons(n_samples=N, noise=noise_frac, random_state=seed)
-        if d > 2:
-            extra_dims = rng.standard_normal(size=(N, d - 2))
-            X = np.hstack([X, extra_dims])
             
     else:
         raise ValueError(f"Unknown dataset name: {name}")
@@ -431,7 +419,7 @@ def run_suite(
                                     noise_frac=noise_used,
                                 )
 
-                                # -------- baseline: full SDOclust --------
+                                # baseline: full SDOclust
                                 te, ari, ami = baseline_sdoclust(X, y_true)
                                 if output_path is not None:
                                     row = {
@@ -462,7 +450,7 @@ def run_suite(
                                     }
                                     append_result_csv(output_path, row)
 
-                                # baseline
+                                # baseline: kmean
                                 kmeans_results = baseline_kmean_parallel(X, y_true, n_clusters=centers)
                                 if output_path is not None:
                                     for (mname, te, ari, ami) in kmeans_results:
@@ -494,7 +482,7 @@ def run_suite(
                                         }
                                         append_result_csv(output_path, row)
 
-                                # Wrapper SDOclust
+                                # Parallel SDOclust
                                 experiment_fixed_nsplits(
                                     X, y_true,
                                     n_splits_list=tuple(n_splits_list),
@@ -513,7 +501,7 @@ def run_suite(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--datasets", type=str, default="blobs,noisy_blobs,moons",
+    parser.add_argument("--datasets", type=str, default="blobs,noisy_blobs",
                         help="Dataset names")
     parser.add_argument("--size", type=str, default="200000",
                         help="Sample sizes (e.g. 50000,200000)")

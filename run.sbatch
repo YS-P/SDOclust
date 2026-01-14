@@ -31,7 +31,7 @@ for CORES in "${CORES_LIST[@]}"; do
 
     srun --cpu-bind=cores --cpus-per-task="${CORES}" \
       python sdoclust_parallel.py \
-        --datasets "blobs,noisy_blobs,moons" \
+        --datasets "blobs,noisy_blobs" \
         --size "${SIZE}" \
         --backends "seq,joblib,dask" \
         --splits "2,4,8,16" \
