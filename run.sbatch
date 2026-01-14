@@ -31,10 +31,12 @@ for CORES in "${CORES_LIST[@]}"; do
 
     srun --cpu-bind=cores --cpus-per-task="${CORES}" \
       python sdoclust_parallel.py \
-        --datasets "blobs,noisy_blobs" \
+        --datasets "blobs,noisy_blobs,moons" \
         --size "${SIZE}" \
         --backends "seq,joblib,dask" \
         --splits "2,4,8,16" \
+        --noise "0.05,0.15" \
+        --centers "5,10" \
         --seeds "42" \
         --output "results/results_core_${CORES}.csv"
   done
