@@ -52,7 +52,6 @@ def append_result_csv(output_path, row_dict):
         if write_header:
             writer.writeheader()
 
-        # Ensure all required keys exist
         full_row = {k: row_dict.get(k, "") for k in FIELDNAMES}
         writer.writerow(full_row)
 
@@ -108,12 +107,11 @@ def extend_labels_chunk(X_chunk, O2, labs, l_idx, knn):
     if k <= 0:
         return -np.ones(X_chunk.shape[0], dtype=int)
 
-    # (n_chunk, n_obs)
     D = cdist(X_chunk, O2, metric="euclidean")
 
-    # top-k (unordered)
+    # top-k
     closest = np.argpartition(D, kth=k - 1, axis=1)[:, :k]
-    lknn = l_idx[closest]  # (n_chunk, k) in [0..K-1]
+    lknn = l_idx[closest]
 
     K = len(labs)
     C = np.zeros((X_chunk.shape[0], K), dtype=np.int32)
