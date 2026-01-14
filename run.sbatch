@@ -9,6 +9,8 @@
 
 set -euo pipefail
 
+source "${HOME}/SDOclust/.venv/bin/activate"
+
 mkdir -p logs results
 
 # Set Experiment
