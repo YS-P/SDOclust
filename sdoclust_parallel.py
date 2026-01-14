@@ -4,7 +4,7 @@ import numpy as np
 from joblib import Parallel, delayed
 from dask import delayed as ddelayed, compute as dcompute
 
-from sklearn.datasets import make_blobs
+from sklearn.datasets import make_blobs, make_moons
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score
 
@@ -352,6 +352,9 @@ def baseline_kmean_parallel(X, y_true, n_clusters):
 
 # Build Dataset
 def build_dataset(name, N, d, centers, std, seed, noise_frac=0.0):
+    rng = np.random.default_rng(seed)
+    
+    # Blobs dataset
     if name in ("blobs", "noisy_blobs"):
         X, y = make_blobs(
             n_samples=N,
@@ -360,25 +363,30 @@ def build_dataset(name, N, d, centers, std, seed, noise_frac=0.0):
             cluster_std=std,
             random_state=seed,
         )
+    
+    # Moons dataset
+    elif name == "moons":
+        X, y = make_moons(n_samples=N, noise=noise_frac, random_state=seed)
+        if d > 2:
+            extra_dims = rng.standard_normal(size=(N, d - 2))
+            X = np.hstack([X, extra_dims])
+            
+    else:
+        raise ValueError(f"Unknown dataset name: {name}")
 
-        # noise/outliers injection
-        # uniform box outliers labeled as -1
-        if name == "noisy_blobs":
-            nf = max(0.0, float(noise_frac))
-            rng = np.random.default_rng(seed)
-            n_noise = int(N * nf)
-            if n_noise > 0:
-                mins = X.min(axis=0)
-                maxs = X.max(axis=0)
-                Xn = rng.uniform(mins, maxs, size=(n_noise, d))
-                yn = -np.ones(n_noise, dtype=int)
-                X = np.vstack([X, Xn])
-                y = np.hstack([y, yn])
+    # Add noise
+    if name == "noisy_blobs":
+        nf = max(0.0, float(noise_frac))
+        n_noise = int(N * nf)
+        if n_noise > 0:
+            mins, maxs = X.min(axis=0), X.max(axis=0)
+            Xn = rng.uniform(mins, maxs, size=(n_noise, d))
+            yn = -np.ones(n_noise, dtype=int)
+            X = np.vstack([X, Xn])
+            y = np.hstack([y, yn])
 
-        X = StandardScaler().fit_transform(X)
-        return X, y
-
-    raise ValueError(f"Unknown dataset name: {name}")
+    X = StandardScaler().fit_transform(X)
+    return X, y
 
 # Main suite
 def run_suite(
@@ -505,7 +513,7 @@ def run_suite(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--datasets", type=str, default="blobs,noisy_blobs",
+    parser.add_argument("--datasets", type=str, default="blobs,noisy_blobs,moons",
                         help="Dataset names")
     parser.add_argument("--size", type=str, default="200000",
                         help="Sample sizes (e.g. 50000,200000)")
