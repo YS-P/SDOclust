@@ -11,10 +11,6 @@ set -euo pipefail
 
 mkdir -p logs results
 
-echo "Updating pip and installing requirements..."
-pip install --upgrade pip
-pip install -r requirements.txt
-
 # Set Experiment
 CORES_LIST=(1 2 4 8 16)
 SIZE_LIST=(50000 200000)
