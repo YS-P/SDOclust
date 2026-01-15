@@ -120,8 +120,7 @@ The project is organized to ensure reproducibility and clear logging:
 ## Execution
 #### Local Execution
 ```
-srun --cpu-bind=cores --cpus-per-task="16" \
-      python sdoclust_parallel.py \
+python sdoclust_parallel.py \
         --datasets "blobs,noisy_blobs" \
         --size "50000,200000" \
         --backends "seq,joblib,dask" \
