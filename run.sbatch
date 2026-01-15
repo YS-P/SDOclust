@@ -41,3 +41,7 @@ for CORES in "${CORES_LIST[@]}"; do
         --output "results/results_core_${CORES}.csv"
   done
 done
+
+echo "All experiments completed. Generating plots."
+python plot_results.py
+echo "Pipeline Finished"
