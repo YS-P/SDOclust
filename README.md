@@ -165,7 +165,7 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 ### Calability by Core Count
 - **Parallel Efficiency:** `parallel_sdoclust` demonstrates a clear downward trend in `total_time` as the number of CPU cores increases.    
 - **Backend Comparison:** Both `joblib` and `dask` backends show superior scalability compared to the `seq` backend.
-<div align="center"><img width="600" height="1180" alt="algorithm_speed_comparison" src="https://github.com/user-attachments/assets/0208c02b-4d37-4e4b-9943-80b9f7a1fbca"/></div>
+<img width="3179" height="1185" alt="algorithm_speed_comparison" src="https://github.com/user-attachments/assets/4d88f1ac-cc00-4fef-89f0-13f5731c6b0d" />
 
 ### Impact of Split Count
 - Performance improves as the `n_splits` value increases, even when keeping the number of cores constant.
@@ -175,6 +175,7 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 ### Consistency in Clustering Accuracy
 - **Accuracy:** Despite partitioning data and extending labels, there is insignificant difference in ARI and AMI scores compared to the baseline full model.
 - **Dataset Performance:** Maintained performance of 1.0 on the `blobs` dataset and consistent high scores on the `noisy_blobs` dataset.
+<img width="3179" height="1185" alt="accuracy_consistency_analysis" src="https://github.com/user-attachments/assets/7e856baa-53dc-4cb4-a2db-fb560d66cf7c" />
 
 ### Impact of Cluster Centers (centers)
 - **Execution Time:** More clusters generate more observers, increasing the computational load during the label extension phase.
@@ -185,8 +186,7 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 ### Benchmarking
 - **Noise Robustness:** On the `noisy_blobs` dataset, the Parallel SDOclust achieved a higher ARI compared to `minibatch_kmeans`, proving superior accuracy in the presence of noise.
 - **Speed vs Accuracy:** While `minibatch_kmeans` remains faster in absolute execution time, SDOclust significantly closes the gap through parallelization while providing higher classification accuracy.
-<div align="center"><img width="600" height="1180" alt="algorithm_robustness" src="https://github.com/user-attachments/assets/e6b6f26b-33ca-4b4e-b481-827fa5dc3b41" /></div>
-
+<img width="3179" height="1185" alt="algorithm_robustness" src="https://github.com/user-attachments/assets/08e4b174-dd07-43e8-8f3e-16bae8c017d6" />
 
 ### Result Notation
 phase	method	dataset	N	d	centers	std	noise_frac	seed	backend	n_splits	splitA_pos	splitA_size	chunksize	knn_eff
