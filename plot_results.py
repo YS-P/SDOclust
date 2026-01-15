@@ -3,6 +3,16 @@ from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# Global Plot Style - 모든 그래프의 외형을 비슷하게 맞춤
+plt.rcParams.update({
+    'font.size': 10,
+    'axes.grid': True,
+    'grid.alpha': 0.3,
+    'grid.linestyle': '--',
+    'legend.frameon': True,
+    'figure.figsize': (10, 6)
+})
+
 # Utility
 RESULTS_DIR = Path("results")
 FIG_DIR = RESULTS_DIR / "figures"
@@ -85,9 +95,9 @@ def plot_parallel_performance(df, outpath, method_name="parallel_sdoclust"):
         ax1.plot(data["cores"], data["speedup"], marker='o', label=f"splits={int(s)}")
         ax2.plot(data["cores"], data["efficiency"], marker='s', label=f"splits={int(s)}")
     
-    ax1.set_title("Speedup vs Number of Cores"), ax1.legend(title="Splits"), ax1.grid(True, alpha=0.3)
-    ax2.set_title("Efficiency vs Number of Cores"), ax2.set_ylim(0, 1.1), ax2.legend(title="Splits"), ax2.grid(True, alpha=0.3)
-    fig.suptitle(f"Parallel Performance Analysis: {method_name}", fontsize=18, y=0.98)
+    ax1.set_title("Speedup vs Number of Cores"), ax1.set_xlabel("Cores"), ax1.set_ylabel("Speedup"), ax1.legend(title="Splits")
+    ax2.set_title("Efficiency vs Number of Cores"), ax2.set_xlabel("Cores"), ax2.set_ylabel("Efficiency"), ax2.set_ylim(0, 1.1), ax2.legend(title="Splits")
+    fig.suptitle(f"Parallel Performance Analysis: {method_name}", fontsize=16, y=0.98)
     plt.tight_layout(rect=[0, 0, 1, 1])
     plt.savefig(outpath, dpi=200, bbox_inches='tight')
     plt.close()
@@ -101,35 +111,22 @@ def plot_centers_analysis(df, outpath):
         "total": "mean", 
         "ami": "mean"
     })
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
     center_vals = sorted(agg["centers"].unique())
 
     for c in center_vals:
         data = agg[agg["centers"] == c]
-        
         ax1.plot(data["cores"], data["total"], marker='o', label=f"centers={int(c)}")
         ax2.plot(data["cores"], data["ami"], marker='s', label=f"centers={int(c)}")
 
-    ax1.set_title("Execution Time by Core Count", fontsize=14, pad=15)
-    ax1.set_xlabel("Number of Cores")
-    ax1.set_ylabel("Total Time (sec)")
-    ax1.grid(True, linestyle='--', alpha=0.5)
-    ax1.legend(title="Centers")
+    ax1.set_title("Execution Time by Core Count"), ax1.set_xlabel("Number of Cores"), ax1.set_ylabel("Total Time (sec)"), ax1.legend(title="Centers")
+    ax2.set_title("Clustering Accuracy (AMI) by Core Count"), ax2.set_xlabel("Number of Cores"), ax2.set_ylabel("AMI Score"), ax2.set_ylim(0, 1.1), ax2.legend(title="Centers")
 
-    ax2.set_title("Clustering Accuracy (AMI) by Core Count", fontsize=14, pad=15)
-    ax2.set_xlabel("Number of Cores")
-    ax2.set_ylabel("AMI Score")
-    ax2.set_ylim(0, 1.1)  # 정확도는 0~1 사이 고정
-    ax2.grid(True, linestyle='--', alpha=0.5)
-    ax2.legend(title="Centers")
-
-    fig.suptitle("Impact of Cluster Centers: Speed vs Accuracy", fontsize=18, y=1.02)
-    plt.tight_layout()
-    
+    fig.suptitle("Impact of Cluster Centers: Speed vs Accuracy", fontsize=16, y=0.98)
+    plt.tight_layout(rect=[0, 0, 1, 1])
     plt.savefig(outpath, dpi=200, bbox_inches='tight')
     plt.close()
-    print(f"Saved: {outpath}")
 
 # Compares the drop in accuracy between algorithms as noise_frac increases
 def plot_full_robustness_comparison(df, outpath):
@@ -139,11 +136,12 @@ def plot_full_robustness_comparison(df, outpath):
     sub["method_label"] = sub["method"].map(methods_map)
     agg = sub.groupby(["method_label", "noise_frac"], as_index=False)["ami"].mean()
 
-    plt.figure(figsize=(10, 6.5))
+    plt.figure(figsize=(10, 6))
     for label, data in agg.groupby("method_label"):
         plt.plot(data["noise_frac"], data["ami"], label=label, marker='o')
     plt.title("Clustering Robustness: AMI Score by Noise Fraction")
-    plt.xlabel("Noise Fraction"), plt.ylabel("AMI Score"), plt.ylim(0.4, 1.05), plt.grid(True, alpha=0.3), plt.legend()
+    plt.xlabel("Noise Fraction"), plt.ylabel("AMI Score"), plt.ylim(0.4, 1.05), plt.legend(title="Algorithms")
+    plt.tight_layout()
     plt.savefig(outpath, dpi=200, bbox_inches='tight')
     plt.close()
 
@@ -158,7 +156,8 @@ def plot_algorithm_time_series(df, outpath, x_axis="cores"):
         agg = data.groupby(x_axis)["total"].mean().sort_index()
         plt.plot(agg.index, agg.values, marker='o', label=label, linewidth=2)
     plt.title(f"Execution Time Comparison by {x_axis.capitalize()}")
-    plt.xlabel(x_axis.capitalize()), plt.ylabel("Total Time (sec)"), plt.grid(True, alpha=0.3), plt.legend()
+    plt.xlabel(x_axis.capitalize()), plt.ylabel("Total Time (sec)"), plt.legend(title="Algorithms")
+    plt.tight_layout()
     plt.savefig(outpath, dpi=200, bbox_inches='tight')
     plt.close()
 
