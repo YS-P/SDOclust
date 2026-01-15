@@ -162,7 +162,7 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 
 # Results
 
-### calability by Core Count
+### Calability by Core Count
 - **Parallel Efficiency:** `parallel_sdoclust` demonstrates a clear downward trend in `total_time` as the number of CPU cores increases.    
 - **Backend Comparison:** Both `joblib` and `dask` backends show superior scalability compared to the `seq` backend.
 <div align="center"><img width="600" height="1180" alt="algorithm_speed_comparison" src="https://github.com/user-attachments/assets/0208c02b-4d37-4e4b-9943-80b9f7a1fbca"/></div>
