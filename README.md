@@ -23,12 +23,14 @@ The label extension phase is executed using different execution models:
     Each backend executes label extension independently on each split, and results are merged back into the original data order.
    
 ## Computational Environment
-This project was benchmarked on a AWS HPC Cluster.
+This project was benchmarked on a AWS HPC Cluster.  
 
 - Scheduler: Slurm
 - Head Node: t3.medium (Ubuntu 22.04)
 - Compute Node: c6i.4xlarge (16 vCPUs / 32 GiB RAM)
 - Region: eu-north-1 (Stockholm)
+
+(details in `config.yaml`)  
 
 ## Evaluation
 Clustering quality and performance are evaluated using:  
