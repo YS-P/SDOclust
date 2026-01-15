@@ -130,36 +130,128 @@ def plot_centers_analysis(df, outpath):
 
 # Compares the drop in accuracy between algorithms as noise_frac increases
 def plot_full_robustness_comparison(df, outpath):
-    methods_map = {"parallel_sdoclust": "SDO (Parallel)", "sdoclust_full": "SDO (Full)", "minibatch_joblib": "MB-KMeans", "kmeans_seq": "KMeans"}
+    methods_map = {
+        "parallel_sdoclust": "SDO (Parallel)", 
+        "sdoclust_full": "SDO (Full)", 
+        "minibatch_joblib": "MB-KMeans", 
+        "kmeans_seq": "KMeans"
+    }
+    
     sub = df[df["dataset"] == "noisy_blobs"].copy()
     sub = sub[sub["method"].isin(methods_map.keys())]
     sub["method_label"] = sub["method"].map(methods_map)
-    agg = sub.groupby(["method_label", "noise_frac"], as_index=False)["ami"].mean()
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
 
-    plt.figure(figsize=(10, 6))
-    for label, data in agg.groupby("method_label"):
-        plt.plot(data["noise_frac"], data["ami"], label=label, marker='o')
-    plt.title("Clustering Robustness: AMI Score by Noise Fraction")
-    plt.xlabel("Noise Fraction"), plt.ylabel("AMI Score"), plt.ylim(0.4, 1.05), plt.legend(title="Algorithms")
-    plt.tight_layout()
+    agg_ami = sub.groupby(["method_label", "noise_frac"], as_index=False)["ami"].mean()
+    for label, data in agg_ami.groupby("method_label"):
+        ax1.plot(data["noise_frac"], data["ami"], label=label, marker='o', linewidth=2)
+    
+    ax1.set_title("Robustness: AMI Score by Noise Fraction")
+    ax1.set_xlabel("Noise Fraction")
+    ax1.set_ylabel("AMI Score")
+    ax1.set_ylim(0.4, 1.05)
+    ax1.legend(title="Algorithms")
+    ax1.grid(True, alpha=0.3)
+
+    if "ari" in sub.columns:
+        agg_ari = sub.groupby(["method_label", "noise_frac"], as_index=False)["ari"].mean()
+        for label, data in agg_ari.groupby("method_label"):
+            ax2.plot(data["noise_frac"], data["ari"], label=label, marker='s', linewidth=2)
+        
+        ax2.set_title("Robustness: ARI Score by Noise Fraction")
+        ax2.set_xlabel("Noise Fraction")
+        ax2.set_ylabel("ARI Score")
+        ax2.set_ylim(0.4, 1.05)
+        ax2.legend(title="Algorithms")
+        ax2.grid(True, alpha=0.3)
+    else:
+        ax2.text(0.5, 0.5, "ARI Data Not Available", ha='center', va='center')
+
+    fig.suptitle("Clustering Robustness Analysis: AMI vs ARI", fontsize=16, y=0.98)
+    plt.tight_layout(rect=[0, 0, 1, 1])
     plt.savefig(outpath, dpi=200, bbox_inches='tight')
     plt.close()
 
+# Compares accuracy between Full and Parallel models across different datasets
+def plot_accuracy_consistency_comparison(df, outpath):
+    target_datasets = ["blobs", "noisy_blobs"]
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+    axes = {"blobs": ax1, "noisy_blobs": ax2}
+
+    for ds_name in target_datasets:
+        ax = axes[ds_name]
+        ds_sub = df[df["dataset"] == ds_name].copy()
+        
+        full_val = ds_sub[ds_sub["method"] == "sdoclust_full"]["ami"].mean()
+        para_sub = ds_sub[ds_sub["method"] == "parallel_sdoclust"].copy()
+        para_agg = para_sub.groupby("splits")["ami"].mean().sort_index()
+        
+        labels = ["Full"] + [str(int(s)) for s in para_agg.index]
+        values = [full_val] + para_agg.values.tolist()
+        colors = ['#1f77b4'] + ['#ff7f0e'] * len(para_agg)
+        
+        x_pos = range(len(labels))
+        ax.bar(x_pos, values, color=colors, width=0.8, edgecolor='white', linewidth=0.5)
+        
+        ax.set_xticks(x_pos)
+        ax.set_xticklabels(labels)
+        
+        ax.set_title(f"Accuracy Consistency: {ds_name.capitalize()}")
+        ax.set_xlabel("Number of Splits")
+        ax.set_ylabel("AMI Score")
+        ax.set_ylim(0, 1.2)
+        ax.grid(axis='y', linestyle='--', alpha=0.5)
+
+    fig.suptitle("Clustering Accuracy Comparison: Full vs Parallel (by Splits)", fontsize=16, y=0.98)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(outpath, dpi=200, bbox_inches='tight')
+    plt.close()
+    
 # Compares the absolute execution times of all algorithms
 def plot_algorithm_time_series(df, outpath, x_axis="cores"):
-    methods_map = {"sdoclust_full": "SDO (Full)", "parallel_sdoclust": "SDO (Parallel)", "kmeans_seq": "KMeans", "minibatch_seq": "MiniBatch KM"}
+    methods_map = {
+        "sdoclust_full": "SDO (Full)", 
+        "parallel_sdoclust": "SDO (Parallel)", 
+        "kmeans_seq": "KMeans", 
+        "minibatch_seq": "MiniBatch KM"
+    }
     sub = df[df["method"].isin(methods_map.keys())].copy()
     sub["method_label"] = sub["method"].map(methods_map)
-    
-    plt.figure(figsize=(10, 6))
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+
     for label, data in sub.groupby("method_label"):
         agg = data.groupby(x_axis)["total"].mean().sort_index()
-        plt.plot(agg.index, agg.values, marker='o', label=label, linewidth=2)
-    plt.title(f"Execution Time Comparison by {x_axis.capitalize()}")
-    plt.xlabel(x_axis.capitalize()), plt.ylabel("Total Time (sec)"), plt.legend(title="Algorithms")
-    plt.tight_layout()
+        ax1.plot(agg.index, agg.values, marker='o', label=label, linewidth=2)
+    
+    ax1.set_title("Execution Time Comparison by Algorithms")
+    ax1.set_xlabel(x_axis.capitalize())
+    ax1.set_ylabel("Total Time (sec)")
+    ax1.legend(title="Algorithms")
+    ax1.grid(True)
+
+    if "backend" in df.columns:
+        para_sub = df[df["method"] == "parallel_sdoclust"].copy()
+        para_sub = para_sub[para_sub["backend"].isin(["seq", "joblib", "dask"])]
+        
+        for backend, data in para_sub.groupby("backend"):
+            agg = data.groupby(x_axis)["total"].mean().sort_index()
+            ax2.plot(agg.index, agg.values, marker='s', label=f"Backend: {backend}", linewidth=2)
+        
+        ax2.set_title("Scalability: Parallel SDOclust Backend Comparison (seq vs Parallel)")
+        ax2.set_xlabel(x_axis.capitalize())
+        ax2.set_ylabel("Total Time (sec)")
+        ax2.legend(title="Backends")
+        ax2.grid(True)
+    else:
+        ax2.text(0.5, 0.5, "Backend column not found", ha='center', va='center')
+
+    fig.suptitle("Performance and Backend Scalability Analysis", fontsize=16, y=0.98)
+    plt.tight_layout(rect=[0, 0, 1, 1])
     plt.savefig(outpath, dpi=200, bbox_inches='tight')
     plt.close()
+
 
 def main():
     FIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -170,11 +262,13 @@ def main():
     plot_parallel_performance(df, FIG_DIR / "parallel_scalability.png")
     # Noise Robustness (AMI)
     plot_full_robustness_comparison(df, FIG_DIR / "algorithm_robustness.png")
+    # Centers complexity analysis
+    plot_centers_analysis(df, FIG_DIR / "centers_complexity_analysis.png") 
+    # Accuracy consistency between splits
+    plot_accuracy_consistency_comparison(df, FIG_DIR / "accuracy_consistency_analysis.png")
     # Speed comparison between algorithms
     plot_algorithm_time_series(df, FIG_DIR / "algorithm_speed_comparison.png")
-    # Centers complexity analysis
-    plot_centers_analysis(df, FIG_DIR / "centers_complexity_analysis.png")
-
+    
     print(f"Visualization complete. Check figures in: {FIG_DIR}")
 
 if __name__ == "__main__":
