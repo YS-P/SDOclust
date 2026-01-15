@@ -1,0 +1,21 @@
+Region: eu-north-1
+Image:
+  Os: ubuntu2204
+HeadNode:
+  InstanceType: t3.medium
+  Networking:
+    SubnetId: subnet-05a2158e3be1904fc
+  Ssh:
+    KeyName: sdoclust_ed
+Scheduling:
+  Scheduler: slurm
+  SlurmQueues:
+    - Name: compute
+      ComputeResources:
+        - Name: c6i16
+          InstanceType: c6i.4xlarge
+          MinCount: 0
+          MaxCount: 1
+      Networking:
+        SubnetIds:
+          - subnet-05a2158e3be1904fc
