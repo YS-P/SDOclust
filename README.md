@@ -98,20 +98,21 @@ Main script implementing the split-based SDOclust architecture and running all e
 The project is organized to ensure reproducibility and clear logging:  
 
 - sdoclust_parallel.py: The implementation of the parallel SDOclust and benchmarking.  
+      Includes:  
+      - fixed n-splits experiments  
+      - sequential / joblib / dask comparisons  
+      - baseline SDOclust comparison  
 - logs/: Contains standard output (stdout). Files are named jobname_ID.out, allowing to trace the execution history.  
 - results/: Contains raw performance data in CSV format (e.g., results_core_16.csv). These files store:  
       - Runtime (Fit, Extension, Total)  
       - Quality Metrics (ARI, AMI)  
-      - Data Metadata (Noise level, dimensions, number of centers)
-      - Each row represents a unique combination of dataset, core count, and backends.
-      - If you execute code with `submit.sh`, each results are saving by number of cores.
-      - Visual plots generated from these CSVs can be found in the plots/ directory.
+      - Data Metadata (Noise level, dimensions, number of centers)  
+      - Each row represents a unique combination of dataset, core count, and backends.  
+      - If you execute code with `submit.sh`, each results are saving by number of cores.  
+      - Visual plots generated from these CSVs can be found in the plots/ directory.  
 
 
-Includes:  
-- fixed n-splits experiments  
-- sequential / joblib / dask comparisons  
-- baseline SDOclust comparison  
+
 
 ## Execution
 #### Local Execution
