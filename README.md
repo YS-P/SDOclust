@@ -112,7 +112,7 @@ The project is organized to ensure reproducibility and clear logging:
       - Data Metadata (Noise level, dimensions, number of centers)  
       - Each row represents a unique combination of dataset, core count, and backends.  
       - If you execute code with `submit.sh`, each results are saving by number of cores.  
-      - Visual plots generated from these CSVs can be found in the plots/ directory.  
+      - Visual plots generated from these CSVs can be found in the figures/ directory.  
 
 
 
