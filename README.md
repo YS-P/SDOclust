@@ -102,10 +102,10 @@ The project is organized to ensure reproducibility and clear logging:
 - results/: Contains raw performance data in CSV format (e.g., results_core_16.csv). These files store:  
       - Runtime (Fit, Extension, Total)  
       - Quality Metrics (ARI, AMI)  
-      - Data Metadata (Noise level, dimensions, number of centers)
-      - Each row represents a unique combination of dataset, core count, and backends.
-      - If you execute code with `submit.sh`, each results are saving by number of cores.
-      - Visual plots generated from these CSVs can be found in the plots/ directory.
+      - Data Metadata (Noise level, dimensions, number of centers)  
+      - Each row represents a unique combination of dataset, core count, and backends.  
+      - If you execute code with `submit.sh`, each results are saving by number of cores.  
+      - Visual plots generated from these CSVs can be found in the plots/ directory.  
 
 
 Includes:  
