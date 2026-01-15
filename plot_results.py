@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Global Plot Style - 모든 그래프의 외형을 비슷하게 맞춤
+# Global Plot Style
 plt.rcParams.update({
     'font.size': 10,
     'axes.grid': True,
