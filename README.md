@@ -89,7 +89,8 @@ SDOclust-Parallel/
 │   ├── results_core_2.csv  # Results with 2 core
 │   ├── results_core_4.csv  # Results with 4 core
 │   ├── results_core_8.csv  # Results with 8 core
-│   └── results_core_16.csv # Results with 16 core
+│   ├── results_core_16.csv # Results with 16 core
+│   └── plots/              # Visualization plots
 │
 └── README.md               # Project documentation
 ```
@@ -115,14 +116,16 @@ Includes:
 ## Execution
 #### Local Execution
 ```
-srun --cpu-bind=cores --cpus-per-task="16"
-  python sdoclust_parallel.py \
-          --datasets "blobs,noisy_blobs" \
-          --size "5000,20000" \
-          --backends "seq,joblib,dask" \
-          --splits "2,4,8,16" \
-          --seeds "42" \
-          --output "results/results.csv"
+srun --cpu-bind=cores --cpus-per-task="16" \
+      python sdoclust_parallel.py \
+        --datasets "blobs,noisy_blobs" \
+        --size "50000,200000" \
+        --backends "seq,joblib,dask" \
+        --splits "2,4,8,16" \
+        --noise "0.05,0.15" \
+        --centers "5,10" \
+        --seeds "42" \
+        --output "results/results.csv"
 ```
 #### High-Performance Computing (Slurm)
 ```
