@@ -82,6 +82,7 @@ SDOclust-Parallel/
 ├── run.sbatch              # Slurm batch script for job submission
 ├── submit.sh               # Automation script to run experiments across core counts
 │
+├── plot_results.py         # Visualizes experimental result
 ├── logs/                   # Slurm standard output files (*.out)
 │   └── sdoclust_bench_3.out 
 ├── results/                # Benchmark result data in CSV format
@@ -90,7 +91,7 @@ SDOclust-Parallel/
 │   ├── results_core_4.csv  # Results with 4 core
 │   ├── results_core_8.csv  # Results with 8 core
 │   ├── results_core_16.csv # Results with 16 core
-│   └── plots/              # Visualization plots
+│   └── figures/              # Visualization plots
 │
 └── README.md               # Project documentation
 ```
