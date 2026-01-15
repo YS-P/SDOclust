@@ -93,7 +93,7 @@ SDOclust-Parallel/
 │   ├── results_core_4.csv  # Results with 4 core
 │   ├── results_core_8.csv  # Results with 8 core
 │   ├── results_core_16.csv # Results with 16 core
-│   └── figures/              # Visualization plots
+│   └── figures/            # Visualization plots
 │
 └── README.md               # Project documentation
 ```
