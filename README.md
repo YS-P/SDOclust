@@ -107,7 +107,7 @@ The project is organized to ensure reproducibility and clear logging:
       - fixed n-splits experiments  
       - sequential / joblib / dask comparisons  
       - baseline SDOclust comparison  
-- logs/: Contains standard output (stdout). Files are named jobname_ID.out, allowing to trace the execution history.  
+- logs/: Contains standard output (stdout). Files are named {jobname}_{id}.out, allowing to trace the execution history.  
 - results/: Contains raw performance data in CSV format (e.g., results_core_16.csv). These files store:  
       - Runtime (Fit, Extension, Total)  
       - Quality Metrics (ARI, AMI)  
