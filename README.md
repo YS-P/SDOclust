@@ -1,4 +1,4 @@
-# SDOclust
+# Parallelization of SDOclust
 
 ## Overview
 This project aims to develop a split based parallel wrapper pipeline around SDOclust and evaluate its performance against baselines.
