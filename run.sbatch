@@ -2,7 +2,7 @@
 #SBATCH --job-name=sdoclust_bench
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
-#SBATCH --time=03:00:00
+#SBATCH --time=20:00:00
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=28GB
@@ -15,7 +15,7 @@ mkdir -p logs results
 
 # Set Experiment
 CORES_LIST=(1 2 4 8 16)
-SIZE_LIST=(50000 200000)
+SIZE_LIST=(50000 200000 1000000)
 
 # Prevent BLAS/OMP corruption
 export OMP_NUM_THREADS=1
@@ -36,7 +36,7 @@ for CORES in "${CORES_LIST[@]}"; do
         --backends "seq,joblib,dask" \
         --splits "2,4,8,16" \
         --noise "0.05,0.15" \
-        --centers "5,10" \
+        --centers "5,10,50" \
         --seeds "42" \
         --output "results/results_core_${CORES}.csv"
   done

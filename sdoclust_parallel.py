@@ -21,6 +21,7 @@ from parallel_kmeans import (
     minibatch_kmeans_seq,
     minibatch_kmeans_joblib,
     minibatch_kmeans_dask,
+    daskml_kmeans,
     evaluate_model,
 )
 
@@ -30,6 +31,7 @@ FIELDNAMES = [
     "dataset", "N", "d", "centers", "std", "noise_frac", "seed",
     "backend", "n_splits", "splitA_pos", "splitA_size",
     "chunksize", "knn_eff",
+    "n_jobs",
     "fit_time", "ext_time", "total_time",
     "n_obs", "ari", "ami"
 ]
@@ -67,7 +69,6 @@ def make_splits(indices, n_splits, seed=0, shuffle=True):
 def extract_observers_and_labels(model, d):
     attrs = vars(model)
 
-    # Observers: any 2D array with shape[1]==d, take the largest by rows
     O_candidates = []
     for name, val in attrs.items():
         if isinstance(val, np.ndarray) and val.ndim == 2 and val.shape[1] == d:
@@ -78,7 +79,6 @@ def extract_observers_and_labels(model, d):
 
     n_obs = O.shape[0]
 
-    # Labels: any 1D int array with length n_obs
     l_candidates = []
     for name, val in attrs.items():
         if isinstance(val, np.ndarray) and val.ndim == 1 and val.shape[0] == n_obs:
@@ -101,7 +101,7 @@ def extract_observers_and_labels(model, d):
     l_name, l = max(l_candidates, key=lambda t: score_label_name(t[0]))
     return (O_name, O), (l_name, l)
 
-# Predict labels by querying k nearest observers and doing majority vote over their labels
+# Predict labels by querying k nearest observers and doing majority vote
 def extend_labels_chunk(X_chunk, O2, labs, l_idx, knn):
     k = min(int(knn), O2.shape[0])
     if k <= 0:
@@ -109,7 +109,6 @@ def extend_labels_chunk(X_chunk, O2, labs, l_idx, knn):
 
     D = cdist(X_chunk, O2, metric="euclidean")
 
-    # top-k
     closest = np.argpartition(D, kth=k - 1, axis=1)[:, :k]
     lknn = l_idx[closest]
 
@@ -200,8 +199,8 @@ def experiment_fixed_nsplits(
 
     for backend in backends:
         print("\n" + "=" * 70)
-        print(f"[backend={backend}] chunksize={chunksize}")
-        print(f"{'backend':>7s} {'splitA':>6s} {'|A|':>6s} {'fit':>7s} {'ext':>7s} "
+        print(f"[backend={backend}] n_jobs={n_jobs}  chunksize={chunksize}")
+        print(f"{'backend':>7s} {'splits':>6s} {'|A|':>6s} {'fit':>7s} {'ext':>7s} "
               f"{'total':>7s} {'n_obs':>6s} {'ARI':>6s} {'AMI':>6s}")
 
         for n_splits in n_splits_list:
@@ -220,7 +219,6 @@ def experiment_fixed_nsplits(
             (_, O), (_, l) = extract_observers_and_labels(model, d=d_X)
             n_obs = len(O)
 
-            # Use SDOclust's own x/xc for label extension if present
             if hasattr(model, "xc") and model.xc is not None:
                 knn_eff = int(model.xc)
             elif hasattr(model, "x") and model.x is not None:
@@ -271,6 +269,7 @@ def experiment_fixed_nsplits(
                     "splitA_size": int(len(splitA_idx)),
                     "chunksize": int(chunksize),
                     "knn_eff": int(knn_eff),
+                    "n_jobs": int(n_jobs),
 
                     "fit_time": float(fit_time),
                     "ext_time": float(ext_time),
@@ -293,61 +292,53 @@ def baseline_sdoclust(X, y_true):
     print(f"Baseline SDOclust Time={te:.3f}s  ARI={ari:.3f}  AMI={ami:.3f}")
     return te, ari, ami
 
-# Baseline: KMeans 
+# Baseline: KMeans
 def get_kmeans_pred(model, X):
     if hasattr(model, "labels_"):
-        return model.labels_
+        labels = model.labels_
+        # dask_ml returns dask array
+        if hasattr(labels, "compute"):
+            labels = labels.compute()
+        return labels
     if hasattr(model, "predict"):
         return model.predict(X)
     raise ValueError("Model has neither labels_ nor predict().")
 
-def baseline_kmean_parallel(X, y_true, n_clusters):
+def baseline_kmean_parallel(X, y_true, n_clusters, n_jobs=-1):
     results = []
     print("Baseline parallel kmeans")
 
     t0 = time.time()
     model_seq = kmeans_seq(X, n_clusters=n_clusters)
-    y_pred = get_kmeans_pred(model_seq, X)
-    te = time.time() - t0
-    ari = adjusted_rand_score(y_true, y_pred)
-    ami = adjusted_mutual_info_score(y_true, y_pred)
-    evaluate_model(model_seq, X, y_true, "KMeans Sequential", t0)
+    te, ari, ami = evaluate_model(model_seq, X, y_true, "KMeans Sequential", t0)
     results.append(("kmeans_seq", te, ari, ami))
 
     t0 = time.time()
     model_mb_seq = minibatch_kmeans_seq(X, n_clusters=n_clusters, batch_size=2000)
-    y_pred = get_kmeans_pred(model_mb_seq, X)
-    te = time.time() - t0
-    ari = adjusted_rand_score(y_true, y_pred)
-    ami = adjusted_mutual_info_score(y_true, y_pred)
-    evaluate_model(model_mb_seq, X, y_true, "MiniBatchKMeans Seq", t0)
+    te, ari, ami = evaluate_model(model_mb_seq, X, y_true, "MiniBatchKMeans Seq", t0)
     results.append(("minibatch_seq", te, ari, ami))
 
     t0 = time.time()
-    model_joblib = minibatch_kmeans_joblib(X, n_clusters=n_clusters, batch_size=2000, n_jobs=-1)
-    y_pred = get_kmeans_pred(model_joblib, X)
-    te = time.time() - t0
-    ari = adjusted_rand_score(y_true, y_pred)
-    ami = adjusted_mutual_info_score(y_true, y_pred)
-    evaluate_model(model_joblib, X, y_true, "MiniBatchKMeans Joblib", t0)
+    model_joblib = minibatch_kmeans_joblib(X, n_clusters=n_clusters, batch_size=2000, n_jobs=n_jobs)
+    te, ari, ami = evaluate_model(model_joblib, X, y_true, "MiniBatchKMeans Joblib", t0)
     results.append(("minibatch_joblib", te, ari, ami))
 
     t0 = time.time()
     model_dask = minibatch_kmeans_dask(X, n_clusters=n_clusters, batch_size=2000)
-    y_pred = get_kmeans_pred(model_dask, X)
-    te = time.time() - t0
-    ari = adjusted_rand_score(y_true, y_pred)
-    ami = adjusted_mutual_info_score(y_true, y_pred)
-    evaluate_model(model_dask, X, y_true, "MiniBatchKMeans Dask", t0)
+    te, ari, ami = evaluate_model(model_dask, X, y_true, "MiniBatchKMeans Dask", t0)
     results.append(("minibatch_dask", te, ari, ami))
+
+    t0 = time.time()
+    model_daskml = daskml_kmeans(X, n_clusters=n_clusters)
+    te, ari, ami = evaluate_model(model_daskml, X, y_true, "DaskML KMeans", t0)
+    results.append(("daskml_kmeans", te, ari, ami))
 
     return results
 
 # Build Dataset
 def build_dataset(name, N, d, centers, std, seed, noise_frac=0.0):
     rng = np.random.default_rng(seed)
-    
-    # Blobs dataset
+
     if name in ("blobs", "noisy_blobs"):
         X, y = make_blobs(
             n_samples=N,
@@ -356,11 +347,9 @@ def build_dataset(name, N, d, centers, std, seed, noise_frac=0.0):
             cluster_std=std,
             random_state=seed,
         )
-            
     else:
         raise ValueError(f"Unknown dataset name: {name}")
 
-    # Add noise
     if name == "noisy_blobs":
         nf = max(0.0, float(noise_frac))
         n_noise = int(N * nf)
@@ -430,26 +419,24 @@ def run_suite(
                                         "std": float(std),
                                         "noise_frac": float(noise_used),
                                         "seed": int(seed),
-
                                         "backend": "na",
                                         "n_splits": -1,
                                         "splitA_pos": -1,
                                         "splitA_size": -1,
                                         "chunksize": int(chunksize),
                                         "knn_eff": -1,
-
+                                        "n_jobs": int(n_jobs),
                                         "fit_time": float(te),
                                         "ext_time": 0.0,
                                         "total_time": float(te),
-
                                         "n_obs": -1,
                                         "ari": float(ari),
                                         "ami": float(ami),
                                     }
                                     append_result_csv(output_path, row)
 
-                                # baseline: kmean
-                                kmeans_results = baseline_kmean_parallel(X, y_true, n_clusters=centers)
+                                # baseline: kmeans (all variants)
+                                kmeans_results = baseline_kmean_parallel(X, y_true, n_clusters=centers, n_jobs=n_jobs)
                                 if output_path is not None:
                                     for (mname, te, ari, ami) in kmeans_results:
                                         row = {
@@ -462,18 +449,16 @@ def run_suite(
                                             "std": float(std),
                                             "noise_frac": float(noise_used),
                                             "seed": int(seed),
-
                                             "backend": "na",
                                             "n_splits": -1,
                                             "splitA_pos": -1,
                                             "splitA_size": -1,
                                             "chunksize": int(chunksize),
                                             "knn_eff": -1,
-
+                                            "n_jobs": int(n_jobs),
                                             "fit_time": float(te),
                                             "ext_time": 0.0,
                                             "total_time": float(te),
-
                                             "n_obs": -1,
                                             "ari": float(ari),
                                             "ami": float(ami),
@@ -499,26 +484,17 @@ def run_suite(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--datasets", type=str, default="blobs,noisy_blobs",
-                        help="Dataset names")
-    parser.add_argument("--size", type=str, default="200000",
-                        help="Sample sizes (e.g. 50000,200000)")
-    parser.add_argument("--backends", type=str, default="seq,joblib,dask",
-                        help="Execution backends (seq,joblib,dask)")
-    parser.add_argument("--splits", type=str, default="2,4,8,16",
-                        help="Number of splits")
-    parser.add_argument("--noise", type=str, default="0.05",
-                        help="Noise fractions(e.g. 0,0.05,0.1)")
-    parser.add_argument("--centers", type=str, default="5",
-                        help="Ground-truth cluster counts (e.g. 3,5,10)")
-    parser.add_argument("--seeds", type=str, default="42",
-                        help="Random seeds")
-    parser.add_argument("--output", type=str, default="results/results.csv",
-                        help="Path to CSV file (appends results)")
-
-    parser.add_argument("--chunksize", type=int, default=2000, help="Chunk size for cdist in label extension")
-    parser.add_argument("--knn", type=int, default=10, help="Fallback k for label extension if model has no x/xc")
-    parser.add_argument("--n_jobs", type=int, default=-1, help="Joblib n_jobs for backend=joblib")
+    parser.add_argument("--datasets", type=str, default="blobs,noisy_blobs")
+    parser.add_argument("--size", type=str, default="200000")
+    parser.add_argument("--backends", type=str, default="seq,joblib,dask")
+    parser.add_argument("--splits", type=str, default="2,4,8,16")
+    parser.add_argument("--noise", type=str, default="0.05")
+    parser.add_argument("--centers", type=str, default="10")
+    parser.add_argument("--seeds", type=str, default="42")
+    parser.add_argument("--output", type=str, default="results/results.csv")
+    parser.add_argument("--chunksize", type=int, default=2000)
+    parser.add_argument("--knn", type=int, default=10)
+    parser.add_argument("--n_jobs", type=int, default=-1)
 
     args = parser.parse_args()
 
@@ -536,7 +512,7 @@ if __name__ == "__main__":
         seeds=seeds,
         backends=backends,
         n_splits_list=n_splits_list,
-        d_list=(10, 50),
+        d_list=(50, 100),
         centers_list=centers_list,
         std_list=(1.0, 2.0),
         noise_list=noise_list,
