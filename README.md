@@ -1,7 +1,7 @@
-# SDOclust
+# Parallelization of SDOclust
 
 ## Overview
-This project aims to develop a parallelized version of SDOclust and evaluate its performance against baseline SDOclust and established clustering methods.
+This project aims to develop a split based parallel wrapper pipeline around SDOclust and evaluate its performance against baselines.
 
 ## Methodology
 1. Data Splitting  
@@ -16,7 +16,7 @@ The dataset is divided into multiple splits of similar size.
 
 3. Parallel Execution Backends  
 The label extension phase is executed using different execution models:   
-    - per-batch processing: baseline implementation  
+    - per-batch processing: sequential label extension
     - joblib: multi-thread execution on a single machine  
     - dask: task-based parallel execution  
 
@@ -43,9 +43,10 @@ Clustering quality and performance are evaluated using:
 - Number of observers (n_obs)
 
 Results are reported in tables:  
-- Scalability with respect split size  
+- Scalability with respect to number of splits (n_split)
+- Scalability with respect to number of CPU cores
 - Performance differences between execution backends  
-- Trade offs between computation time and clustering quality
+- Trade-offs between computation time and clustering quality
 
 Baselines:  
 - Baselines include full SDOclust executed on the entire dataset, and scikit-learn KMeans and MiniBatchKMeans with sequential, joblib, and dask backends.
@@ -72,7 +73,8 @@ Experiments are run on two synthetic dataset variants:
 - blobs: clean Gaussian blobs generated with `make_blobs`.  
 - noisy_blobs: the same blobs dataset + uniform noise points.  
   Noise points are sampled uniformly within the feature min/max range of the blob data.  
-  These noise points are assigned the ground truth label '-1'.
+  These noise points are assigned the ground truth label '-1' (treating -1 as an additional ground-truth class).  
+*predicted labels do not explicitly output -1, so noise points are absorbed into the nearest clusters during label extension.*
 
 ## Project Structure
 ```
@@ -105,7 +107,7 @@ The project is organized to ensure reproducibility and clear logging:
       - fixed n-splits experiments  
       - sequential / joblib / dask comparisons  
       - baseline SDOclust comparison  
-- logs/: Contains standard output (stdout). Files are named jobname_ID.out, allowing to trace the execution history.  
+- logs/: Contains standard output (stdout). Files are named {jobname}_{id}.out, allowing to trace the execution history.  
 - results/: Contains raw performance data in CSV format (e.g., results_core_16.csv). These files store:  
       - Runtime (Fit, Extension, Total)  
       - Quality Metrics (ARI, AMI)  
@@ -152,7 +154,7 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 
 `--noise` Noise fractions (noisy_blobs).
 
-`--center` Ground-truth cluster counts.
+`--centers` Ground-truth cluster counts.
   
 `--splits`  Number of data splits.
 
@@ -162,19 +164,20 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 
 # Results
 
-### Calability by Core Count
+### Scalability by Core Count
 - **Parallel Efficiency:** `parallel_sdoclust` demonstrates a clear downward trend in `total_time` as the number of CPU cores increases.    
 - **Backend Comparison:** Both `joblib` and `dask` backends show superior scalability compared to the `seq` backend.
-<div align="center"><img width="600" height="1180" alt="algorithm_speed_comparison" src="https://github.com/user-attachments/assets/0208c02b-4d37-4e4b-9943-80b9f7a1fbca"/></div>
+<img width="3179" height="1185" alt="algorithm_speed_comparison" src="https://github.com/user-attachments/assets/4d88f1ac-cc00-4fef-89f0-13f5731c6b0d" />
 
 ### Impact of Split Count
-- Performance improves as the `n_splits` value increases, even when keeping the number of cores constant.
-- In a 16 core environment, setting `n_splits=16` yielded the fastest total time, suggesting that data partitioning is reducing bottlenecks in parallel processing.
+- Performance improves as the `n_split` value increases, even when keeping the number of cores constant.
+- In a 16 core environment, setting `n_split=16` yielded the fastest total time, suggesting that data partitioning is reducing bottlenecks in parallel processing.
 <img width="2779" height="1185" alt="parallel_scalability" src="https://github.com/user-attachments/assets/2796536f-4980-47c1-837b-849acf4f9852" />
 
 ### Consistency in Clustering Accuracy
 - **Accuracy:** Despite partitioning data and extending labels, there is insignificant difference in ARI and AMI scores compared to the baseline full model.
 - **Dataset Performance:** Maintained performance of 1.0 on the `blobs` dataset and consistent high scores on the `noisy_blobs` dataset.
+<img width="3179" height="1185" alt="accuracy_consistency_analysis" src="https://github.com/user-attachments/assets/7e856baa-53dc-4cb4-a2db-fb560d66cf7c" />
 
 ### Impact of Cluster Centers (centers)
 - **Execution Time:** More clusters generate more observers, increasing the computational load during the label extension phase.
@@ -185,29 +188,30 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 ### Benchmarking
 - **Noise Robustness:** On the `noisy_blobs` dataset, the Parallel SDOclust achieved a higher ARI compared to `minibatch_kmeans`, proving superior accuracy in the presence of noise.
 - **Speed vs Accuracy:** While `minibatch_kmeans` remains faster in absolute execution time, SDOclust significantly closes the gap through parallelization while providing higher classification accuracy.
-<div align="center"><img width="600" height="1180" alt="algorithm_robustness" src="https://github.com/user-attachments/assets/e6b6f26b-33ca-4b4e-b481-827fa5dc3b41" /></div>
-
+<img width="3179" height="1185" alt="algorithm_robustness" src="https://github.com/user-attachments/assets/08e4b174-dd07-43e8-8f3e-16bae8c017d6" />
 
 ### Result Notation
-phase	method	dataset	N	d	centers	std	noise_frac	seed	backend	n_splits	splitA_pos	splitA_size	chunksize	knn_eff
-- **phase**: identifier (baseline or experiment)
-- **method**: executed algorithms (parallel_sdo, kmeans, minibatch etc.)
-- **dataset**: used dataset (blobs, noisy_blobs)
-- **N**: size of dataset
-- **d**: data dimensionality
-- **centers**: ground-truth cluster counts
-- **std**: cluster standard deviation
-- **noise_frac**: noise fractions
-- **seed**: random seeds for reproducability
-- **backend**: label extension method (seq, joblib or dask)
-- **n_split**: number of splits (n)
-- **splitA_pos**: split-A position (index of the specific split used to fit the observer model)
-- **splitA_size**: number of samples in split-A
-- **chunksize**: unit of data loaded into memory at once for distance calculations during the Label Extension phase
-- **knn_eff**: value that determines how many observers each data point references to decide its cluster label during the Label Extension phase
-- **fit_time**: time required to fit SDOclust on split-A   
-- **ext_time**: time spent on label extension  
-- **total_time**: sum of fitting and extension times  
-- **n_obs**: Number of observers  
-- **ARI**: Adjusted Rand Index   
-- **AMI**: Adjusted Mutual Information
+| Column      | Description |
+|------------|-------------|
+| phase      | Identifier of the run (`baseline` or `experiment`) |
+| method     | Executed algorithm (`parallel_sdo`, `kmeans`, `minibatch`, etc.) |
+| dataset    | Dataset name (`blobs`, `noisy_blobs`) |
+| N          | Size of dataset (number of samples) |
+| d          | Data dimensionality (number of features) |
+| centers    | Ground-truth number of clusters |
+| std        | Cluster standard deviation |
+| noise_frac | Noise fraction (only used for `noisy_blobs`) |
+| seed       | Random seed for reproducibility |
+| backend    | Label extension backend (`seq`, `joblib`, `dask`) |
+| n_split    | Number of splits (`n`) |
+| splitA_pos | Determines which partition is used for the initial SDOclust fit |
+| splitA_size| Number of samples in split-A |
+| chunksize  | Chunk size used for distance computation during label extension |
+| knn_eff    | Effective k (number of observers referenced per point in label extension) |
+| fit_time   | Time required to fit SDOclust on split-A |
+| ext_time   | Time spent on label extension |
+| total_time | Total runtime (`fit_time + ext_time`) |
+| n_obs      | Number of observers |
+| ARI        | Adjusted Rand Index |
+| AMI        | Adjusted Mutual Information |
+
