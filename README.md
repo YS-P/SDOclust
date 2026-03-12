@@ -90,7 +90,8 @@ SDOclust-Parallel/
 │
 ├── plot_results.py         # Visualizes experimental result
 ├── logs/                   # Slurm standard output files (*.out)
-│   └── sdoclust_bench_3.out 
+│   ├── sdoclust_bench_3.out
+│   └── sdoclust_bench_3.err 
 ├── results/                # Benchmark result data in CSV format
 │   ├── results_core_1.csv  # Results with 1 core
 │   ├── results_core_2.csv  # Results with 2 cores
