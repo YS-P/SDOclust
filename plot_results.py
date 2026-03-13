@@ -368,6 +368,8 @@ def plot_full_robustness_comparison(df, outpath):
     }
 
     sub = df[df["dataset"] == "noisy_blobs"].copy()
+    if "N" in sub.columns:
+        sub = sub[sub["centers"] != 50]
     sub = sub[sub["method"].isin(methods_map.keys())]
     sub["method_label"] = sub["method"].map(methods_map)
 
