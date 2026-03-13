@@ -43,27 +43,29 @@ Clustering quality and performance are evaluated using:
 - Number of observers (n_obs)
 
 Results are reported in tables:  
-- Scalability with respect to number of splits (n_split)
+- Scalability with respect to number of splits (n_splits)
 - Scalability with respect to number of CPU cores
 - Performance differences between execution backends  
 - Trade-offs between computation time and clustering quality
 
 Baselines:  
-- Baselines include full SDOclust executed on the entire dataset, and scikit-learn KMeans and MiniBatchKMeans with sequential, joblib, and dask backends.
+- Baselines include full SDOclust executed on the entire dataset, and scikit-learn KMeans, MiniBatchKMeans, and DaskML KMeans with sequential, joblib, and dask backends.
 
 
 ## Experimental Setup  
 All experiments are conducted on synthetic Gaussian blob datasets generated using `sklearn.datasets.make_blobs`.
 
 Unless otherwise stated, the following default parameters are used:  
-- Number of ground-truth clusters: 5, 10
+- Number of ground-truth clusters: 5, 10, 50
 - Splits: 2, 4, 8, 16
-- Dataset sizes: 5000, 200,000 samples
-- Data Dimensionality: 10, 50
+- Dataset sizes: 50,000; 200,000; 1,000,000 samples
+- Data Dimensionality: 100
 - Standard deviation of clusters: 1.0, 2.0
 - Noise: 0, 0.05, 0.15
 - Backends: seq, joblib, dask
 - Number of CPU cores: 1, 2, 4, 8, 16
+
+> **Note:** Experiments with 50 ground-truth clusters were only conducted with 1, 2, and 4 CPU cores due to memory constraints on the HPC cluster.
 
 Each experiment is repeated using fixed random seeds to ensure reproducibility.
 
@@ -81,20 +83,21 @@ Experiments are run on two synthetic dataset variants:
 SDOclust-Parallel/
 ├── requirements.txt        # Required Python libraries (numpy, scikit-learn, joblib, dask)
 ├── config.yaml             # AWS ParallelCluster configuration (Region, Instances, Slurm)
-├── parallel_kmeans.py      # Baseline implementations (KMeans, MiniBatchKMeans)
+├── parallel_kmeans.py      # Baseline implementations (KMeans, MiniBatchKMeans, DaskML KMeans)
 ├── sdoclust_parallel.py    # Main pipeline: Parallel SDOclust + benchmarking suite
 ├── run.sbatch              # Slurm batch script for job submission
 ├── submit.sh               # Automation script to run experiments across core counts
 │
 ├── plot_results.py         # Visualizes experimental result
 ├── logs/                   # Slurm standard output files (*.out)
-│   └── sdoclust_bench_3.out 
+│   ├── sdoclust_bench_3.out
+│   └── sdoclust_bench_3.err 
 ├── results/                # Benchmark result data in CSV format
 │   ├── results_core_1.csv  # Results with 1 core
-│   ├── results_core_2.csv  # Results with 2 core
-│   ├── results_core_4.csv  # Results with 4 core
-│   ├── results_core_8.csv  # Results with 8 core
-│   ├── results_core_16.csv # Results with 16 core
+│   ├── results_core_2.csv  # Results with 2 cores
+│   ├── results_core_4.csv  # Results with 4 cores
+│   ├── results_core_8.csv  # Results with 8 cores
+│   ├── results_core_16.csv # Results with 16 cores
 │   └── figures/            # Visualization plots
 │
 └── README.md               # Project documentation
@@ -128,7 +131,7 @@ python sdoclust_parallel.py \
         --backends "seq,joblib,dask" \
         --splits "2,4,8,16" \
         --noise "0.05,0.15" \
-        --centers "5,10" \
+        --centers "5,10,50" \
         --seeds "42" \
         --output "results/results.csv"
 ```
@@ -167,28 +170,59 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 ### Scalability by Core Count
 - **Parallel Efficiency:** `parallel_sdoclust` demonstrates a clear downward trend in `total_time` as the number of CPU cores increases.    
 - **Backend Comparison:** Both `joblib` and `dask` backends show superior scalability compared to the `seq` backend.
-<img width="3179" height="1185" alt="algorithm_speed_comparison" src="https://github.com/user-attachments/assets/4d88f1ac-cc00-4fef-89f0-13f5731c6b0d" />
+
+![](results/figures/algorithm_speed_comparison.png)
 
 ### Impact of Split Count
-- Performance improves as the `n_split` value increases, even when keeping the number of cores constant.
-- In a 16 core environment, setting `n_split=16` yielded the fastest total time, suggesting that data partitioning is reducing bottlenecks in parallel processing.
-<img width="2779" height="1185" alt="parallel_scalability" src="https://github.com/user-attachments/assets/2796536f-4980-47c1-837b-849acf4f9852" />
+- Performance improves as the `n_splits` value increases, even when keeping the number of cores constant.
+- In a 16 core environment, setting `n_splits=16` yielded the fastest total time, suggesting that data partitioning is reducing bottlenecks in parallel processing.
+
+![](results/figures/parallel_scalability.png)
+
+### Amdahl's Law Analysis
+- The estimated parallelisable fraction `p` increases with the number of splits, ranging from approximately 0.116 at 2 splits to 0.606 at 16 splits.
+- The theoretical maximum speedup remains limited to approximately 2.5× at 16 splits, confirming that a significant serial fraction persists in the pipeline.
+
+![](results/figures/amdahl_analysis.png)
+
+### Parallel Efficiency Heatmap
+- At a single core, efficiency remains close to 1.0 across all split counts.
+- Efficiency drops sharply as the number of cores increases, falling to as low as 0.05 at 16 cores with 2 splits.
+- Higher split counts partially mitigate this drop, reaching 0.19 at 16 cores and 16 splits.
+
+![](results/figures/efficiency_drop_heatmap.png)
 
 ### Consistency in Clustering Accuracy
 - **Accuracy:** Despite partitioning data and extending labels, there is insignificant difference in ARI and AMI scores compared to the baseline full model.
 - **Dataset Performance:** Maintained performance of 1.0 on the `blobs` dataset and consistent high scores on the `noisy_blobs` dataset.
-<img width="3179" height="1185" alt="accuracy_consistency_analysis" src="https://github.com/user-attachments/assets/7e856baa-53dc-4cb4-a2db-fb560d66cf7c" />
+
+![](results/figures/accuracy_consistency_analysis.png)
 
 ### Impact of Cluster Centers (centers)
 - **Execution Time:** More clusters generate more observers, increasing the computational load during the label extension phase.
 - **Accuracy:** SDOclust maintains robust ARI/AMI scores even as cluster complexity increases.
 - **Parallel Benefit:** The speedup from using multiple cores is more significant at higher center counts, as the increased distance calculations are efficiently distributed.
-<img width="2780" height="1185" alt="centers_complexity_analysis" src="https://github.com/user-attachments/assets/9076542f-ca02-4f3b-a26d-27b29907f08f" />
+
+![](results/figures/centers_complexity_analysis.png)
+
+### Large-Scale Analysis (N=1,000,000)
+- Parallelization remains effective at N=1,000,000 with d=100, tested with up to 4 CPU cores.
+- Both `joblib` and `dask` backends reduce runtime compared to the sequential baseline at this scale.
+
+![](results/figures/large_scale_analysis.png)
+
+### Accuracy Degradation by Cluster Count
+- When the number of cluster centers increases to 50, SDOclust shows a significant drop in ARI and AMI scores (falling to approximately 0.1 or below).
+- Centers ≤ 10 maintain scores above 0.8, indicating that SDOclust requires appropriate hyperparameter tuning for datasets with many clusters.
+
+![](results/figures/centers_accuracy_comparison.png)
 
 ### Benchmarking
 - **Noise Robustness:** On the `noisy_blobs` dataset, the Parallel SDOclust achieved a higher ARI compared to `minibatch_kmeans`, proving superior accuracy in the presence of noise.
-- **Speed vs Accuracy:** While `minibatch_kmeans` remains faster in absolute execution time, SDOclust significantly closes the gap through parallelization while providing higher classification accuracy.
-<img width="3179" height="1185" alt="algorithm_robustness" src="https://github.com/user-attachments/assets/08e4b174-dd07-43e8-8f3e-16bae8c017d6" />
+- **Speed vs Accuracy:** While `minibatch_kmeans` remains faster in absolute execution time, SDOclust significantly closes the gap through parallelization while providing higher clustering accuracy.
+- **DaskML KMeans:** Included as a distributed baseline. Its runtime was considerably higher than standard KMeans variants at the tested dataset sizes, suggesting that distributed coordination overhead outweighs the benefits at this scale.
+
+[algorithm_robustness]
 
 ### Result Notation
 | Column      | Description |
@@ -203,15 +237,15 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 | noise_frac | Noise fraction (only used for `noisy_blobs`) |
 | seed       | Random seed for reproducibility |
 | backend    | Label extension backend (`seq`, `joblib`, `dask`) |
-| n_split    | Number of splits (`n`) |
+| n_splits   | Number of splits (`n`) |
 | splitA_pos | Determines which partition is used for the initial SDOclust fit |
 | splitA_size| Number of samples in split-A |
 | chunksize  | Chunk size used for distance computation during label extension |
 | knn_eff    | Effective k (number of observers referenced per point in label extension) |
+| n_jobs     | Number of parallel workers passed to the backend |
 | fit_time   | Time required to fit SDOclust on split-A |
 | ext_time   | Time spent on label extension |
 | total_time | Total runtime (`fit_time + ext_time`) |
 | n_obs      | Number of observers |
 | ARI        | Adjusted Rand Index |
 | AMI        | Adjusted Mutual Information |
-

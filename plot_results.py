@@ -413,7 +413,7 @@ def plot_accuracy_consistency_comparison(df, outpath):
 
     for ds_name in target_datasets:
         ax = axes[ds_name]
-        ds_sub = df[df["dataset"] == ds_name].copy()
+        ds_sub = df[(df["dataset"] == ds_name) & (df["centers"] <= 10)].copy()
 
         full_val = ds_sub[ds_sub["method"] == "sdoclust_full"]["ami"].mean()
         para_sub = ds_sub[ds_sub["method"] == "parallel_sdoclust"].copy()
