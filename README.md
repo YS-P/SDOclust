@@ -178,6 +178,7 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 - In a 16 core environment, setting `n_splits=16` yielded the fastest total time, suggesting that data partitioning is reducing bottlenecks in parallel processing.
 
 ![](results/figures/parallel_scalability.png)
+- **Note:** The default observer count may be insufficient for centers=50. The parameter `k` should be scaled with the number of expected clusters to maintain accuracy.
 
 ### Amdahl's Law Analysis
 - The estimated parallelisable fraction `p` increases with the number of splits, ranging from approximately 0.116 at 2 splits to 0.606 at 16 splits.
