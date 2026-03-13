@@ -90,6 +90,7 @@ def plot_parallel_performance(df, outpath, method_name="parallel_sdoclust"):
     sub = df[df["method"] == method_name].copy()
     if "N" in sub.columns:
         sub = sub[sub["N"] != 1000000]
+    sub = sub[sub["centers"] <= 10]
     group_cols = [c for c in ["dataset", "N", "d", "centers", "splits"] if c in sub.columns]
 
     rows = []
@@ -140,6 +141,7 @@ def plot_amdahl_analysis(df, outpath, method_name="parallel_sdoclust"):
     if "N" in sub.columns:
         sub = sub[sub["N"] != 1000000]
         seq = seq[seq["N"] != 1000000]
+    sub = sub[sub["centers"] <= 10]
 
     if sub.empty or seq.empty:
         print("  [amdahl] Insufficient data – skipping.")
@@ -218,6 +220,7 @@ def plot_efficiency_drop(df, outpath, method_name="parallel_sdoclust"):
     if "N" in sub.columns:
         sub = sub[sub["N"] != 1000000]
         seq = seq[seq["N"] != 1000000]
+    sub = sub[sub["centers"] <= 10]
 
     if sub.empty or seq.empty:
         print("  [efficiency_drop] Insufficient data – skipping.")
@@ -368,8 +371,7 @@ def plot_full_robustness_comparison(df, outpath):
     }
 
     sub = df[df["dataset"] == "noisy_blobs"].copy()
-    if "N" in sub.columns:
-        sub = sub[sub["centers"] != 50]
+    sub = sub[sub["centers"] <= 10]
     sub = sub[sub["method"].isin(methods_map.keys())]
     sub["method_label"] = sub["method"].map(methods_map)
 
@@ -462,6 +464,7 @@ def plot_algorithm_time_series(df, outpath, x_axis="cores"):
     sub = df[df["method"].isin(methods_map.keys())].copy()
     if "N" in sub.columns:
         sub = sub[sub["N"] != 1000000]
+    sub = sub[sub["centers"] <= 10]
     sub["method_label"] = sub["method"].map(methods_map)
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
@@ -479,6 +482,7 @@ def plot_algorithm_time_series(df, outpath, x_axis="cores"):
         para_sub = df[df["method"] == "parallel_sdoclust"].copy()
         if "N" in para_sub.columns:
             para_sub = para_sub[para_sub["N"] != 1000000]
+        para_sub = para_sub[para_sub["centers"] <= 10]
         para_sub = para_sub[para_sub["backend"].isin(["seq", "joblib", "dask"])]
 
         for backend, data in para_sub.groupby("backend"):
@@ -503,6 +507,7 @@ def plot_algorithm_time_series(df, outpath, x_axis="cores"):
 # Plot 8: Large-scale (N=1M) analysis, CORES=1,2,4 only
 def plot_large_scale_analysis(df, outpath):
     sub = df[df["N"] == 1000000].copy()
+    sub = sub[sub["centers"] <= 10]
     if sub.empty:
         print("  [large_scale] No N=1M data – skipping.")
         return
