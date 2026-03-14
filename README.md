@@ -178,13 +178,12 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 - SDO (Full) does not benefit from additional cores as it operates sequentially regardless of available resources.
 - SDO (Parallel) demonstrates a clear decrease in runtime as the number of cores increases, closing the gap with KMeans variants.
 - DaskML KMeans runtime was considerably higher than standard KMeans variants at the tested dataset sizes.  
--  Both `joblib` and `dask` backends reduce runtime compared to the sequential baseline at this scale.
+- Parallelization remains effective at N=1,000,000; both `joblib` and `dask` backends reduce runtime compared to the sequential baseline at this scale.  
 
 ![](results/figures/large_scale_analysis.png)
 
 ### Benchmarking on Robustness
-- **Noise Robustness:** On the `noisy_blobs` dataset, parallel SDOclust achieved comparable ARI scores to KMeans (Seq) and MB-KMeans, while 
-consistently outperforming KMeans (DaskML).  
+- **Noise Robustness:** On the `noisy_blobs` dataset, parallel SDOclust achieved comparable ARI and AMI scores to KMeans (Seq) and MB-KMeans, while consistently outperforming KMeans (DaskML).  
 - **Speed vs Accuracy:** While MB-KMeans remains faster in absolute execution time, SDOclust closes the gap through parallelization while 
 maintaining comparable clustering accuracy.  
 
@@ -192,10 +191,10 @@ maintaining comparable clustering accuracy.
 
 ### Impact of Split Count
 - Performance improves as the `n_splits` value increases, even when keeping the number of cores constant.
-- In a 16 core environment, setting `n_splits=16` yielded the fastest total time, suggesting that data partitioning is reducing bottlenecks in parallel processing.
+- In a 16 core environment, setting `n_splits=16` achived the fastest total time, suggesting that data partitioning is reducing bottlenecks in parallel processing.
 
 ![](results/figures/parallel_scalability.png)
-- **Note:** For scenarios with many clusters, increasing observers or reducing `χ` (the parameter controlling the local threshold for graph-edge cutting between observers) is recommended to maintain accuracy.
+
 
 ### Amdahl's Law Analysis
 - The estimated parallelisable fraction `p` increases with the number of splits, ranging from approximately 0.42 at 2 splits to 0.79 at 16 splits.  
@@ -223,6 +222,7 @@ the pipeline.
 - **Parallel Benefit:** The speedup from using multiple cores is more significant at higher center counts, as the increased distance calculations are efficiently distributed.
 
 ![](results/figures/centers_complexity_analysis.png)
+- **Note:** For scenarios with many clusters, increasing observers or reducing `χ` (the parameter controlling the local threshold for graph-edge cutting between observers) is recommended to maintain accuracy.
 
 ### Accuracy Degradation by Cluster Count
 - When the number of cluster centers increases to 50, SDOclust shows a significant drop in ARI and AMI scores (falling to approximately 0.1 or below).
