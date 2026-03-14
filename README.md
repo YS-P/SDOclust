@@ -180,8 +180,6 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 - DaskML KMeans: Included as a distributed baseline. Its runtime was considerably higher than standard KMeans variants at the tested dataset sizes, suggesting that distributed coordination overhead outweighs the benefits at this scale.  
 -  Both `joblib` and `dask` backends reduce runtime compared to the sequential baseline at this scale.  
 
-![](results/figures/large_scale_analysis.png)
-
 ### Benchmarking on Robustness
 - **Noise Robustness:** On the `noisy_blobs` dataset, parallel SDOclust achieved comparable ARI scores to KMeans (Seq) and MB-KMeans, while 
 consistently outperforming KMeans (DaskML).  
