@@ -308,7 +308,7 @@ def plot_centers_analysis(df, outpath):
     plt.close()
     print(f"  Saved: {outpath}")
 
-# Plot 5: AMI/ARI vs noise_frac, split by centers=50 vs centers<=10, for SDO and KMeans
+# Plot 5: AMI/ARI vs noise_frac, split by centers=50 vs centers<=10, for SDO Full and SDO Parallel
 def plot_centers_accuracy_comparison(df, outpath):
     sub = df[df["dataset"] == "noisy_blobs"].copy()
     sub = sub[sub["method"].isin(["parallel_sdoclust", "sdoclust_full"])]
@@ -318,7 +318,6 @@ def plot_centers_accuracy_comparison(df, outpath):
     }
     sub["method_label"] = sub["method"].map(methods_map)
 
-    # 선 스타일: (linestyle, marker)
     style = {
         ("SDO (Full)",     "low"):  ("-",  "o"),
         ("SDO (Full)",     "high"): ("-", "o"),
@@ -352,7 +351,7 @@ def plot_centers_accuracy_comparison(df, outpath):
     plt.close()
     print(f"  Saved: {outpath}")
 
-# Plot 6: Noise robustness
+# Plot 6: Noise robustness comparison across all algorithms
 def plot_full_robustness_comparison(df, outpath):
     methods_map = {
         "parallel_sdoclust": "SDO (Parallel)",
