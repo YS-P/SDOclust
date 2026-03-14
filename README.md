@@ -123,18 +123,6 @@ The project is organized to ensure reproducibility and clear logging:
 
 
 ## Execution
-#### Local Execution
-```
-python sdoclust_parallel.py \
-        --datasets "blobs,noisy_blobs" \
-        --size "50000,200000" \
-        --backends "seq,joblib,dask" \
-        --splits "2,4,8,16" \
-        --noise "0.05,0.15" \
-        --centers "5,10,50" \
-        --seeds "42" \
-        --output "results/results.csv"
-```
 #### High-Performance Computing (Slurm)
 ```
 chmod +x submit.sh
