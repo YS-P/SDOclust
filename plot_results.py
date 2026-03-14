@@ -426,7 +426,7 @@ def plot_accuracy_consistency_comparison(df, outpath):
         ax.set_title(f"Accuracy Consistency: {ds_name.capitalize()}")
         ax.set_xlabel("Number of Splits")
         ax.set_ylabel("AMI Score")
-        ax.set_ylim(0, 1.2)
+        ax.set_ylim(0, 1.0)
         ax.grid(axis='y', linestyle='--', alpha=0.5)
 
     fig.suptitle("Clustering Accuracy Comparison: Full vs Parallel (by Splits)",
