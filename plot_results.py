@@ -136,6 +136,8 @@ def plot_parallel_performance(df, outpath, method_name="parallel_sdoclust"):
 def plot_amdahl_analysis(df, outpath, method_name="parallel_sdoclust"):
     sub = df[(df["method"] == method_name) & (df["backend"] != "seq")].copy()
     seq = df[(df["method"] == method_name) & (df["backend"] == "seq")].copy()
+    sub = sub[sub["N"] != 1000000]
+    seq = seq[seq["N"] != 1000000]
     sub = sub[sub["centers"] <= 10]
 
     if sub.empty or seq.empty:
@@ -513,7 +515,7 @@ def plot_large_scale_analysis(df, outpath):
     backend_style_map = {
         "dask":   dict(linestyle="--", marker="o", linewidth=2.5, markersize=8),
         "joblib": dict(linestyle="-",  marker="s", linewidth=2.5, markersize=8),
-        "seq":    dict(linestyle=":",  marker="^", linewidth=2.5, markersize=8),
+        "seq":    dict(linestyle="-",  marker="^", linewidth=2.5, markersize=8),
     }
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
