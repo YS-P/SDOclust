@@ -177,8 +177,8 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 - KMeans (Seq) and MiniBatchKMeans remain the fastest in absolute runtime due to their lightweight implementations.
 - SDO (Full) does not benefit from additional cores as it operates sequentially regardless of available resources.
 - SDO (Parallel) demonstrates a clear decrease in runtime as the number of cores increases, closing the gap with KMeans variants.
-- DaskML KMeans: Included as a distributed baseline. Its runtime was considerably higher than standard KMeans variants at the tested dataset sizes, suggesting that distributed coordination overhead outweighs the benefits at this scale.
-- Parallelization remains effective at N=1,000,000 with d=100, tested with up to 4 CPU cores. Both `joblib` and `dask` backends reduce runtime compared to the sequential baseline at this scale.
+- DaskML KMeans: Included as a distributed baseline. Its runtime was considerably higher than standard KMeans variants at the tested dataset sizes, suggesting that distributed coordination overhead outweighs the benefits at this scale.  
+-  Both `joblib` and `dask` backends reduce runtime compared to the sequential baseline at this scale.  
 
 ![](results/figures/large_scale_analysis.png)
 
