@@ -85,11 +85,9 @@ def estimate_amdahl_p(speedups, core_counts):
     return float(np.mean(estimates)) if estimates else float("nan")
 
 
-# Plot 1: Speedup & Efficiency (N<=200k)
+# Plot 1: Speedup & Efficiency
 def plot_parallel_performance(df, outpath, method_name="parallel_sdoclust"):
     sub = df[df["method"] == method_name].copy()
-    if "N" in sub.columns:
-        sub = sub[sub["N"] != 1000000]
     sub = sub[sub["centers"] <= 10]
     group_cols = [c for c in ["dataset", "N", "d", "centers", "splits"] if c in sub.columns]
 
@@ -116,12 +114,12 @@ def plot_parallel_performance(df, outpath, method_name="parallel_sdoclust"):
         ax1.plot(data["cores"], data["speedup"], marker='o', label=f"splits={int(s)}")
         ax2.plot(data["cores"], data["efficiency"], marker='s', label=f"splits={int(s)}")
 
-    ax1.set_title("Speedup vs Number of Cores (N≤200k)")
+    ax1.set_title("Speedup vs Number of Cores")
     ax1.set_xlabel("Cores")
     ax1.set_ylabel("Speedup")
     ax1.legend(title="Splits")
 
-    ax2.set_title("Efficiency vs Number of Cores (N≤200k)")
+    ax2.set_title("Efficiency vs Number of Cores")
     ax2.set_xlabel("Cores")
     ax2.set_ylabel("Efficiency")
     ax2.set_ylim(0, 1.2)
@@ -134,13 +132,10 @@ def plot_parallel_performance(df, outpath, method_name="parallel_sdoclust"):
     print(f"  Saved: {outpath}")
 
 
-# Plot 2: Amdahl's Law Fit (N<=200k)
+# Plot 2: Amdahl's Law Fit
 def plot_amdahl_analysis(df, outpath, method_name="parallel_sdoclust"):
     sub = df[(df["method"] == method_name) & (df["backend"] != "seq")].copy()
     seq = df[(df["method"] == method_name) & (df["backend"] == "seq")].copy()
-    if "N" in sub.columns:
-        sub = sub[sub["N"] != 1000000]
-        seq = seq[seq["N"] != 1000000]
     sub = sub[sub["centers"] <= 10]
 
     if sub.empty or seq.empty:
@@ -205,7 +200,7 @@ def plot_amdahl_analysis(df, outpath, method_name="parallel_sdoclust"):
 
             ax.legend(fontsize=8)
 
-    fig.suptitle("Amdahl's Law Analysis — Empirical vs Theoretical Speedup (N≤200k)",
+    fig.suptitle("Amdahl's Law Analysis — Empirical vs Theoretical Speedup",
                  fontsize=14, y=1.01)
     plt.tight_layout()
     plt.savefig(outpath, dpi=200, bbox_inches='tight')
@@ -213,13 +208,10 @@ def plot_amdahl_analysis(df, outpath, method_name="parallel_sdoclust"):
     print(f"  Saved: {outpath}")
 
 
-# Plot 3: Efficiency Drop heat-map (N<=200k)
+# Plot 3: Efficiency Drop heat-map
 def plot_efficiency_drop(df, outpath, method_name="parallel_sdoclust"):
     sub = df[(df["method"] == method_name) & (df["backend"] != "seq")].copy()
     seq = df[(df["method"] == method_name) & (df["backend"] == "seq")].copy()
-    if "N" in sub.columns:
-        sub = sub[sub["N"] != 1000000]
-        seq = seq[seq["N"] != 1000000]
     sub = sub[sub["centers"] <= 10]
 
     if sub.empty or seq.empty:
@@ -266,7 +258,7 @@ def plot_efficiency_drop(df, outpath, method_name="parallel_sdoclust"):
 
         plt.colorbar(im, ax=ax, label="Efficiency (S/n)")
 
-    fig.suptitle("Parallel Efficiency Heat-map (N≤200k)", fontsize=14, y=1.01)
+    fig.suptitle("Parallel Efficiency Heat-map", fontsize=14, y=1.01)
     plt.tight_layout()
     plt.savefig(outpath, dpi=200, bbox_inches='tight')
     plt.close()
@@ -276,8 +268,7 @@ def plot_efficiency_drop(df, outpath, method_name="parallel_sdoclust"):
 # Plot 4: Centers analysis
 def plot_centers_analysis(df, outpath):
     sub = df[df["method"] == "parallel_sdoclust"].copy()
-    if "N" in sub.columns:
-        sub = sub[sub["N"] != 1000000]
+    sub = sub[sub["N"] != 1000000]
     if "centers" not in sub.columns:
         return
 
@@ -502,6 +493,64 @@ def plot_algorithm_time_series(df, outpath, x_axis="cores"):
     plt.close()
     print(f"  Saved: {outpath}")
 
+
+# Plot 9: Large-scale (N=1M) analysis, CORES=1,2,4 only
+def plot_large_scale_analysis(df, outpath):
+    sub = df[df["N"] == 1000000].copy()
+    sub = sub[sub["centers"] <= 10]
+    if sub.empty:
+        print("  [large_scale] No N=1M data – skipping.")
+        return
+
+    methods_map = {
+        "sdoclust_full":     "SDO (Full)",
+        "parallel_sdoclust": "SDO (Parallel)",
+        "kmeans_seq":        "KMeans (Seq)",
+        "minibatch_seq":     "MiniBatch KM (Seq)",
+        "daskml_kmeans":     "KMeans (DaskML)",
+    }
+
+    backend_style_map = {
+        "dask":   dict(linestyle="--", marker="o", linewidth=2.5, markersize=8),
+        "joblib": dict(linestyle="-",  marker="s", linewidth=2.5, markersize=8),
+        "seq":    dict(linestyle=":",  marker="^", linewidth=2.5, markersize=8),
+    }
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+
+    # Left: algorithm comparison
+    algo_sub = sub[sub["method"].isin(methods_map.keys())].copy()
+    algo_sub["method_label"] = algo_sub["method"].map(methods_map)
+    for label, data in algo_sub.groupby("method_label"):
+        agg = data.groupby("cores")["total"].mean().sort_index()
+        ax1.plot(agg.index, agg.values, marker='o', label=label, linewidth=2)
+
+    ax1.set_title("Execution Time by Algorithm (N=1M)")
+    ax1.set_xlabel("Cores")
+    ax1.set_ylabel("Total Time (sec)")
+    ax1.set_xticks([1, 2, 4])
+    ax1.legend(title="Algorithms")
+
+    # Right: backend comparison for parallel_sdoclust
+    para_sub = sub[sub["method"] == "parallel_sdoclust"].copy()
+    para_sub = para_sub[para_sub["backend"].isin(["seq", "joblib", "dask"])]
+    for backend, data in para_sub.groupby("backend"):
+        agg = data.groupby("cores")["total"].mean().sort_index()
+        kw = backend_style_map.get(backend, dict(linestyle="-", marker="s", linewidth=2))
+        ax2.plot(agg.index, agg.values, label=f"Backend: {backend}", **kw)
+
+    ax2.set_title("Backend Comparison: Parallel SDOclust (N=1M)")
+    ax2.set_xlabel("Cores")
+    ax2.set_ylabel("Total Time (sec)")
+    ax2.set_xticks([1, 2, 4])
+    ax2.legend(title="Backends")
+
+    fig.suptitle("Large-Scale Performance Analysis: N=1,000,000", fontsize=16, y=0.98)
+    plt.tight_layout(rect=[0, 0, 1, 1])
+    plt.savefig(outpath, dpi=200, bbox_inches='tight')
+    plt.close()
+    print(f"  Saved: {outpath}")
+
     
 def main():
     FIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -518,6 +567,7 @@ def main():
     plot_centers_accuracy_comparison(df, FIG_DIR / "centers_accuracy_comparison.png")
     plot_accuracy_consistency_comparison(df, FIG_DIR / "accuracy_consistency_analysis.png")
     plot_algorithm_time_series(df, FIG_DIR / "algorithm_speed_comparison.png")
+    plot_large_scale_analysis(df, FIG_DIR / "large_scale_analysis.png")
 
     print(f"\nAll figures saved to: {FIG_DIR}")
 
