@@ -173,23 +173,41 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 
 ![](results/figures/algorithm_speed_comparison.png)
 
+### Benchmarking on Runtime
+- KMeans (Seq) and MiniBatchKMeans remain the fastest in absolute runtime due to their lightweight implementations.
+- SDO (Full) does not benefit from additional cores as it operates sequentially regardless of available resources.
+- SDO (Parallel) demonstrates a clear decrease in runtime as the number of cores increases, closing the gap with KMeans variants.
+- DaskML KMeans: Included as a distributed baseline. Its runtime was considerably higher than standard KMeans variants at the tested dataset sizes, suggesting that distributed coordination overhead outweighs the benefits at this scale.
+- Parallelization remains effective at N=1,000,000 with d=100, tested with up to 4 CPU cores. Both `joblib` and `dask` backends reduce runtime compared to the sequential baseline at this scale.
+
+![](results/figures/large_scale_analysis.png)
+
+### Benchmarking on Robustness
+- **Noise Robustness:** On the `noisy_blobs` dataset, parallel SDOclust achieved comparable ARI scores to KMeans (Seq) and MB-KMeans, while 
+consistently outperforming KMeans (DaskML).  
+- **Speed vs Accuracy:** While MB-KMeans remains faster in absolute execution time, SDOclust closes the gap through parallelization while 
+maintaining comparable clustering accuracy.  
+
+![](results/figures/algorithm_robustness.png)
+
 ### Impact of Split Count
 - Performance improves as the `n_splits` value increases, even when keeping the number of cores constant.
 - In a 16 core environment, setting `n_splits=16` yielded the fastest total time, suggesting that data partitioning is reducing bottlenecks in parallel processing.
 
 ![](results/figures/parallel_scalability.png)
-- **Note:** The default observer count may be insufficient for centers=50. The parameter `k` should be scaled with the number of expected clusters to maintain accuracy.
+- **Note:** For scenarios with many clusters, increasing observers or reducing `χ` (the parameter controlling the local threshold for graph-edge cutting between observers) is recommended to maintain accuracy.
 
 ### Amdahl's Law Analysis
-- The estimated parallelisable fraction `p` increases with the number of splits, ranging from approximately 0.116 at 2 splits to 0.606 at 16 splits.
-- The theoretical maximum speedup remains limited to approximately 2.5× at 16 splits, confirming that a significant serial fraction persists in the pipeline.
+- The estimated parallelisable fraction `p` increases with the number of splits, ranging from approximately 0.42 at 2 splits to 0.79 at 16 splits.  
+- The theoretical maximum speedup remains limited to approximately 4.9× at 16 splits, confirming that a significant serial fraction persists in 
+the pipeline.  
 
 ![](results/figures/amdahl_analysis.png)
 
 ### Parallel Efficiency Heatmap
-- At a single core, efficiency remains close to 1.0 across all split counts.
-- Efficiency drops sharply as the number of cores increases, falling to as low as 0.05 at 16 cores with 2 splits.
-- Higher split counts partially mitigate this drop, reaching 0.19 at 16 cores and 16 splits.
+- At a single core, efficiency remains close to 1.0 across all split counts.  
+- Efficiency drops sharply as the number of cores increases, falling to as low as 0.09 at 16 cores with 2 splits.  
+- Higher split counts partially mitigate this drop, reaching 0.32 at 16 cores and 16 splits.  
 
 ![](results/figures/efficiency_drop_heatmap.png)
 
@@ -200,30 +218,19 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 ![](results/figures/accuracy_consistency_analysis.png)
 
 ### Impact of Cluster Centers (centers)
-- **Execution Time:** More clusters generate more observers, increasing the computational load during the label extension phase.
-- **Accuracy:** SDOclust maintains robust ARI/AMI scores even as cluster complexity increases.
+- **Execution Time:** The number of cluster centers has minimal influence on computational cost, as the observer count remains stable regardless of the number of clusters.
+- **Accuracy:** SDOclust maintains stable ARI/AMI scores for centers≤10. However, a significant drop in accuracy is observed when centers=50, falling to approximately 0.1 or below.
 - **Parallel Benefit:** The speedup from using multiple cores is more significant at higher center counts, as the increased distance calculations are efficiently distributed.
 
 ![](results/figures/centers_complexity_analysis.png)
 
-### Large-Scale Analysis (N=1,000,000)
-- Parallelization remains effective at N=1,000,000 with d=100, tested with up to 4 CPU cores.
-- Both `joblib` and `dask` backends reduce runtime compared to the sequential baseline at this scale.
-
-![](results/figures/large_scale_analysis.png)
-
 ### Accuracy Degradation by Cluster Count
 - When the number of cluster centers increases to 50, SDOclust shows a significant drop in ARI and AMI scores (falling to approximately 0.1 or below).
-- Centers ≤ 10 maintain scores above 0.8, indicating that SDOclust requires appropriate hyperparameter tuning for datasets with many clusters.
+- Centers ≤ 10 maintain scores above 0.9, indicating that SDOclust requires appropriate parameter tuning for datasets with many clusters.
 
 ![](results/figures/centers_accuracy_comparison.png)
 
-### Benchmarking
-- **Noise Robustness:** On the `noisy_blobs` dataset, the Parallel SDOclust achieved a higher ARI compared to `minibatch_kmeans`, proving superior accuracy in the presence of noise.
-- **Speed vs Accuracy:** While `minibatch_kmeans` remains faster in absolute execution time, SDOclust significantly closes the gap through parallelization while providing higher clustering accuracy.
-- **DaskML KMeans:** Included as a distributed baseline. Its runtime was considerably higher than standard KMeans variants at the tested dataset sizes, suggesting that distributed coordination overhead outweighs the benefits at this scale.
 
-[algorithm_robustness]
 
 ### Result Notation
 | Column      | Description |
