@@ -511,8 +511,6 @@ def plot_large_scale_analysis(df, outpath):
         print("  [large_scale] No N=1M data – skipping.")
         return
 
-    sub = sub[sub["cores"].isin([1, 2, 4])]
-
     methods_map = {
         "sdoclust_full":     "SDO (Full)",
         "parallel_sdoclust": "SDO (Parallel)",
