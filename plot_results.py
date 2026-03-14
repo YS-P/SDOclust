@@ -308,7 +308,7 @@ def plot_centers_analysis(df, outpath):
     plt.close()
     print(f"  Saved: {outpath}")
 
-# AMI/ARI vs noise_frac, split by centers=50 vs centers<=10, for SDO and KMeans
+# Plot 5: AMI/ARI vs noise_frac, split by centers=50 vs centers<=10, for SDO and KMeans
 def plot_centers_accuracy_comparison(df, outpath):
     sub = df[df["dataset"] == "noisy_blobs"].copy()
     sub = sub[sub["method"].isin(["parallel_sdoclust", "sdoclust_full"])]
@@ -352,12 +352,12 @@ def plot_centers_accuracy_comparison(df, outpath):
     plt.close()
     print(f"  Saved: {outpath}")
 
-# Plot 5: Noise robustness
+# Plot 6: Noise robustness
 def plot_full_robustness_comparison(df, outpath):
     methods_map = {
         "parallel_sdoclust": "SDO (Parallel)",
         "sdoclust_full":     "SDO (Full)",
-        "minibatch_joblib":  "MB-KMeans (Joblib)",
+        "minibatch_seq":     "MB-KMeans (Seq)",
         "kmeans_seq":        "KMeans (Seq)",
         "daskml_kmeans":     "KMeans (DaskML)",
     }
@@ -365,7 +365,7 @@ def plot_full_robustness_comparison(df, outpath):
     style_map = {
         "SDO (Full)":         dict(linestyle="-",  marker="o", linewidth=3, markersize=10, zorder=5),
         "SDO (Parallel)":     dict(linestyle="--", marker="D", linewidth=3, markersize=10, zorder=5),
-        "MB-KMeans (Joblib)": dict(linestyle="-",  marker="s", linewidth=2, markersize=7),
+        "MB-KMeans": dict(linestyle="-",  marker="s", linewidth=2, markersize=7),
         "KMeans (Seq)":       dict(linestyle="-",  marker="^", linewidth=2, markersize=7),
         "KMeans (DaskML)":    dict(linestyle="-",  marker="v", linewidth=2, markersize=7),
     }
@@ -409,7 +409,7 @@ def plot_full_robustness_comparison(df, outpath):
     print(f"  Saved: {outpath}")
 
 
-# Plot 6: Accuracy consistency
+# Plot 7: Accuracy consistency
 def plot_accuracy_consistency_comparison(df, outpath):
     target_datasets = ["blobs", "noisy_blobs"]
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
@@ -445,7 +445,7 @@ def plot_accuracy_consistency_comparison(df, outpath):
     print(f"  Saved: {outpath}")
 
 
-# Plot 7: Algorithm time series (N<=200k)
+# Plot 8: Algorithm time series (N<=200k)
 def plot_algorithm_time_series(df, outpath, x_axis="cores"):
     methods_map = {
         "sdoclust_full":     "SDO (Full)",
@@ -504,7 +504,7 @@ def plot_algorithm_time_series(df, outpath, x_axis="cores"):
     print(f"  Saved: {outpath}")
 
 
-# Plot 8: Large-scale (N=1M) analysis, CORES=1,2,4 only
+# Plot 9: Large-scale (N=1M) analysis, CORES=1,2,4 only
 def plot_large_scale_analysis(df, outpath):
     sub = df[df["N"] == 1000000].copy()
     sub = sub[sub["centers"] <= 10]
@@ -563,7 +563,7 @@ def plot_large_scale_analysis(df, outpath):
     plt.close()
     print(f"  Saved: {outpath}")
 
-
+    
 def main():
     FIG_DIR.mkdir(parents=True, exist_ok=True)
     df = load_all_results(RESULTS_DIR)
