@@ -177,8 +177,10 @@ submit.sh calls srun to be allocated the specified CPU cores (1–16) and automa
 - KMeans (Seq) and MiniBatchKMeans remain the fastest in absolute runtime due to their lightweight implementations.
 - SDO (Full) does not benefit from additional cores as it operates sequentially regardless of available resources.
 - SDO (Parallel) demonstrates a clear decrease in runtime as the number of cores increases, closing the gap with KMeans variants.
-- DaskML KMeans: Included as a distributed baseline. Its runtime was considerably higher than standard KMeans variants at the tested dataset sizes, suggesting that distributed coordination overhead outweighs the benefits at this scale.  
--  Both `joblib` and `dask` backends reduce runtime compared to the sequential baseline at this scale.  
+- DaskML KMeans runtime was considerably higher than standard KMeans variants at the tested dataset sizes.  
+-  Both `joblib` and `dask` backends reduce runtime compared to the sequential baseline at this scale.
+
+![](results/figures/large_scale_analysis.png)
 
 ### Benchmarking on Robustness
 - **Noise Robustness:** On the `noisy_blobs` dataset, parallel SDOclust achieved comparable ARI scores to KMeans (Seq) and MB-KMeans, while 
@@ -204,8 +206,8 @@ the pipeline.
 
 ### Parallel Efficiency Heatmap
 - At a single core, efficiency remains close to 1.0 across all split counts.  
-- Efficiency drops sharply as the number of cores increases, falling to as low as 0.09 at 16 cores with 2 splits.  
-- Higher split counts partially mitigate this drop, reaching 0.32 at 16 cores and 16 splits.  
+- Efficiency drops sharply as the number of cores increases, falling to as low as 0.05 at 16 cores with 2 splits.  
+- Higher split counts partially mitigate this drop, reaching 0.19 at 16 cores and 16 splits.  
 
 ![](results/figures/efficiency_drop_heatmap.png)
 
